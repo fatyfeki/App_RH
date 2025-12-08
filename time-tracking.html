@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage - SmartHR Lite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1.5rem 2rem;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h2 {
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-primary);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-primary);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Live Clock */
+        .live-clock {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .live-clock .time {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .live-clock .date {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+
+        .stat-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action-btn {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quick-action-btn i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .quick-action-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .quick-action-btn.active i {
+            color: white;
+        }
+
+        /* Tabs */
+        .tabs-nav {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: var(--bg-primary);
+        }
+
+        .table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        /* Time Entry Cards */
+        .time-entries {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .time-entry-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .time-entry-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .time-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .employee-info-small {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .employee-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .time-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .time-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .time-detail-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .time-detail-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .hours-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-top: 1rem;
+        }
+
+        .progress-bar-container {
+            background: var(--bg-primary);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge.on-time {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.late {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.early {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.overtime {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        body.dark-mode .badge.on-time {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        body.dark-mode .badge.late {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        body.dark-mode .badge.early {
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        body.dark-mode .badge.overtime {
+            background: #78350f;
+            color: #fde68a;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 300px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success { border-left: 4px solid var(--success); }
+        .notification.error { border-left: 4px solid var(--danger); }
+        .notification.info { border-left: 4px solid var(--info); }
+
+        .notification i {
+            font-size: 1.5rem;
+        }
+
+        .notification.success i { color: var(--success); }
+        .notification.error i { color: var(--danger); }
+        .notification.info i { color: var(--info); }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-primary);
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+            }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 70px;
+            }
+            .main-content {
+                margin-left: 70px;
+                padding: 1rem;
+            }
+            .logo h2,
+            .nav-item span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+   <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-users-cog"></i>
+            <h2>SmartHR </h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="employees.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            </a>
+            <a href="conges.html" class="nav-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Congés</span>
+            </a>
+            <a href="time-tracking.html" class="nav-item">
+                <i class="fas fa-clock"></i>
+                <span>Pointage</span>
+            </a>
+            <a href="ai-assistant.html" class="nav-item">
+                <i class="fas fa-robot"></i>
+                <span>Assistant IA</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Rapports</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <i class="fas fa-info-circle"></i>
+                <span>À Propos</span>
+            </a>
+        </nav>
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1><i class="fas fa-clock"></i> Gestion du Temps & Pointage</h1>
+            <div class="live-clock">
+                <div class="time" id="liveClock">00:00:00</div>
+                <div class="date" id="liveDate"></div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalEmployees">0</h3>
+                    <p>Employés actifs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="todayHours">0h</h3>
+                    <p>Heures aujourd'hui</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fas fa-calendar-week"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="weekHours">0h</h3>
+                    <p>Heures cette semaine</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="monthHours">0h</h3>
+                    <p>Heures ce mois</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="quickClockIn()">
+                <i class="fas fa-sign-in-alt"></i>
+                <div>
+                    <strong>Arrivée</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Clock In</div>
+                </div>
+            </button>
+            <button class="quick-action-btn" onclick="quickClockOut()">
+                <i class="fas fa-sign-out-alt"></i>
+                <div>
+                    <strong>Départ</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Clock Out</div>
+                </div>
+            </button>
+            <button class="quick-action-btn" onclick="quickBreakStart()">
+                <i class="fas fa-coffee"></i>
+                <div>
+                    <strong>Pause</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Break</div>
+                </div>
+            </button>
+            <button class="quick-action-btn" onclick="quickOvertime()">
+                <i class="fas fa-moon"></i>
+                <div>
+                    <strong>Heures sup</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Overtime</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="manual-entry">
+                <i class="fas fa-edit"></i> Saisie manuelle
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <i class="fas fa-history"></i> Historique
+            </button>
+            <button class="tab-btn" data-tab="cards">
+                <i class="fas fa-th-large"></i> Vue cartes
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                <i class="fas fa-chart-bar"></i> Analytique
+            </button>
+        </div>
+
+        <!-- Tab: Manual Entry -->
+        <div class="tab-content active" id="manual-entry">
+            <div class="card">
+                <h2><i class="fas fa-edit"></i> Enregistrer le pointage</h2>
+                <form id="pointageForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Employé *</label>
+                            <select id="employeeSelect" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar"></i> Date *</label>
+                            <input type="date" id="entryDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Heure d'arrivée *</label>
+                            <input type="time" id="arrivalTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Heure de départ *</label>
+                            <input type="time" id="departureTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-coffee"></i> Pause (minutes)</label>
+                            <input type="number" id="breakTime" value="60" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-tags"></i> Type</label>
+                            <select id="entryType">
+                                <option value="normal">Normal</option>
+                                <option value="overtime">Heures supplémentaires</option>
+                                <option value="weekend">Weekend</option>
+                                <option value="holiday">Jour férié</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label><i class="fas fa-comment"></i> Notes</label>
+                            <textarea id="entryNotes" rows="2" placeholder="Ajouter des notes..."></textarea>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                        <button type="button" class="btn" style="background: var(--bg-primary); color: var(--text-primary);" onclick="document.getElementById('pointageForm').reset()">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: History -->
+        <div class="tab-content" id="history">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> Historique des pointages</h2>
+                
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Rechercher un employé...">
+                    </div>
+                    <select class="filter-select" id="filterEmployee" onchange="filterTimeEntries()">
+                        <option value="">Tous les employés</option>
+                    </select>
+                    <select class="filter-select" id="filterMonth" onchange="filterTimeEntries()">
+                        <option value="">Tous les mois</option>
+                        <option value="01">Janvier</option>
+                        <option value="02">Février</option>
+                        <option value="03">Mars</option>
+                        <option value="04">Avril</option>
+                        <option value="05">Mai</option>
+                        <option value="06">Juin</option>
+                        <option value="07">Juillet</option>
+                        <option value="08">Août</option>
+                        <option value="09">Septembre</option>
+                        <option value="10">Octobre</option>
+                        <option value="11">Novembre</option>
+                        <option value="12">Décembre</option>
+                    </select>
+                    <select class="filter-select" id="filterType" onchange="filterTimeEntries()">
+                        <option value="">Tous les types</option>
+                        <option value="normal">Normal</option>
+                        <option value="overtime">Heures supplémentaires</option>
+                        <option value="weekend">Weekend</option>
+                        <option value="holiday">Jour férié</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="table" id="timeTable">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Date</th>
+                                <th>Arrivée</th>
+                                <th>Départ</th>
+                                <th>Heures</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeTableBody">
+                            <!-- Les données seront insérées ici par JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Cards View -->
+        <div class="tab-content" id="cards">
+            <div class="card">
+                <h2><i class="fas fa-th-large"></i> Vue cartes des pointages</h2>
+                
+                <div class="filters-bar">
+                    <select class="filter-select" id="cardsFilterEmployee" onchange="loadTimeEntriesCards()">
+                        <option value="">Tous les employés</option>
+                    </select>
+                    <select class="filter-select" id="cardsFilterDate" onchange="loadTimeEntriesCards()">
+                        <option value="">Toutes les dates</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="yesterday">Hier</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                    </select>
+                </div>
+
+                <div class="time-entries" id="timeEntriesCards">
+                    <!-- Les cartes seront insérées ici par JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Analytics -->
+        <div class="tab-content" id="analytics">
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> Analytique du temps de travail</h2>
+                
+                <div class="filters-bar">
+                    <select class="filter-select" id="analyticsEmployee" onchange="updateAnalytics()">
+                        <option value="">Tous les employés</option>
+                    </select>
+                    <select class="filter-select" id="analyticsPeriod" onchange="updateAnalytics()">
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                        <option value="quarter">Ce trimestre</option>
+                        <option value="year">Cette année</option>
+                    </select>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Heures travaillées</h3>
+                        <span id="totalHoursAnalytics">Total: 0h</span>
+                    </div>
+                    <div id="hoursChart">
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Lundi</span>
+                                <span>0h</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="mondayBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Mardi</span>
+                                <span>0h</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="tuesdayBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Mercredi</span>
+                                <span>0h</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="wednesdayBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Jeudi</span>
+                                <span>0h</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="thursdayBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Vendredi</span>
+                                <span>0h</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="fridayBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="avgDailyHours">0h</h3>
+                            <p>Moyenne quotidienne</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="onTimePercentage">0%</h3>
+                            <p>À l'heure</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="overtimeHours">0h</h3>
+                            <p>Heures supplémentaires</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="breakTimeAvg">0min</h3>
+                            <p>Pause moyenne</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Données initiales
+        let timeEntries = JSON.parse(localStorage.getItem('smartHR_timeEntries')) || [
+            {
+                id: 1,
+                employeeId: 1,
+                date: '2024-05-15',
+                arrivalTime: '08:30',
+                departureTime: '17:30',
+                breakTime: 60,
+                type: 'normal',
+                notes: 'Journée standard',
+                status: 'on-time'
+            },
+            {
+                id: 2,
+                employeeId: 2,
+                date: '2024-05-15',
+                arrivalTime: '09:15',
+                departureTime: '18:15',
+                breakTime: 45,
+                type: 'overtime',
+                notes: 'Réunion projet',
+                status: 'late'
+            },
+            {
+                id: 3,
+                employeeId: 3,
+                date: '2024-05-14',
+                arrivalTime: '07:45',
+                departureTime: '16:45',
+                breakTime: 60,
+                type: 'normal',
+                notes: '',
+                status: 'early'
+            }
+        ];
+
+        let employees = JSON.parse(localStorage.getItem('smartHR_employees')) || [
+            { id: 1, firstName: 'Jean', lastName: 'Dupont', position: 'Développeur', department: 'IT' },
+            { id: 2, firstName: 'Marie', lastName: 'Martin', position: 'Designer', department: 'Design' },
+            { id: 3, firstName: 'Pierre', lastName: 'Bernard', position: 'Manager', department: 'Management' },
+            { id: 4, firstName: 'Sophie', lastName: 'Petit', position: 'RH', department: 'Ressources Humaines' }
+        ];
+
+        // DOM Elements
+        const liveClock = document.getElementById('liveClock');
+        const liveDate = document.getElementById('liveDate');
+        const themeToggle = document.getElementById('themeToggle');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const employeeSelect = document.getElementById('employeeSelect');
+        const pointageForm = document.getElementById('pointageForm');
+        const searchInput = document.getElementById('searchInput');
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initClock();
+            initTheme();
+            initEmployees();
+            initForm();
+            loadTimeEntries();
+            updateStats();
+            initTabs();
+            initSearch();
+            initFilters();
+            updateAnalytics();
+        });
+
+        // Horloge en temps réel
+        function initClock() {
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR');
+                const dateString = now.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                liveClock.textContent = timeString;
+                liveDate.textContent = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+            }
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        // Thème sombre/clair
+        function initTheme() {
+            const isDarkMode = localStorage.getItem('smartHR_darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+            
+            themeToggle.addEventListener('change', function() {
+                document.body.classList.toggle('dark-mode', this.checked);
+                localStorage.setItem('smartHR_darkMode', this.checked);
+            });
+        }
+
+        // Initialiser la liste des employés
+        function initEmployees() {
+            employeeSelect.innerHTML = '<option value="">Sélectionner un employé</option>';
+            const filterEmployee = document.getElementById('filterEmployee');
+            const cardsFilterEmployee = document.getElementById('cardsFilterEmployee');
+            const analyticsEmployee = document.getElementById('analyticsEmployee');
+            
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = `${emp.firstName} ${emp.lastName}`;
+                employeeSelect.appendChild(option.cloneNode(true));
+                
+                if (filterEmployee) filterEmployee.appendChild(option.cloneNode(true));
+                if (cardsFilterEmployee) cardsFilterEmployee.appendChild(option.cloneNode(true));
+                if (analyticsEmployee) analyticsEmployee.appendChild(option.cloneNode(true));
+            });
+        }
+
+        // Initialiser le formulaire
+        function initForm() {
+            // Définir la date d'aujourd'hui par défaut
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDate').value = today;
+            
+            // Définir les heures par défaut (8h-17h)
+            document.getElementById('arrivalTime').value = '08:30';
+            document.getElementById('departureTime').value = '17:30';
+            
+            pointageForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveTimeEntry();
+            });
+        }
+
+        // Sauvegarder une entrée de temps
+        function saveTimeEntry() {
+            const employeeId = parseInt(document.getElementById('employeeSelect').value);
+            const date = document.getElementById('entryDate').value;
+            const arrivalTime = document.getElementById('arrivalTime').value;
+            const departureTime = document.getElementById('departureTime').value;
+            const breakTime = parseInt(document.getElementById('breakTime').value);
+            const type = document.getElementById('entryType').value;
+            const notes = document.getElementById('entryNotes').value;
+            
+            // Calculer le statut basé sur l'heure d'arrivée
+            let status = 'on-time';
+            const arrivalHour = parseInt(arrivalTime.split(':')[0]);
+            const arrivalMinute = parseInt(arrivalTime.split(':')[1]);
+            
+            if (arrivalHour > 9 || (arrivalHour === 9 && arrivalMinute > 0)) {
+                status = 'late';
+            } else if (arrivalHour < 8) {
+                status = 'early';
+            }
+            
+            const newEntry = {
+                id: Date.now(),
+                employeeId: employeeId,
+                date: date,
+                arrivalTime: arrivalTime,
+                departureTime: departureTime,
+                breakTime: breakTime,
+                type: type,
+                notes: notes,
+                status: status
+            };
+            
+            timeEntries.push(newEntry);
+            localStorage.setItem('smartHR_timeEntries', JSON.stringify(timeEntries));
+            
+            showNotification('success', 'Pointage enregistré avec succès !');
+            loadTimeEntries();
+            updateStats();
+            updateAnalytics();
+            pointageForm.reset();
+            initForm(); // Réinitialiser les valeurs par défaut
+        }
+
+        // Charger les entrées de temps dans le tableau
+        function loadTimeEntries() {
+            const tableBody = document.getElementById('timeTableBody');
+            tableBody.innerHTML = '';
+            
+            timeEntries.forEach(entry => {
+                const employee = employees.find(e => e.id === entry.employeeId);
+                if (!employee) return;
+                
+                const totalHours = calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="employee-info-small">
+                            <div class="employee-avatar-small">${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}</div>
+                            <div>
+                                <strong>${employee.firstName} ${employee.lastName}</strong><br>
+                                <small>${employee.position}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${formatDate(entry.date)}</td>
+                    <td>${entry.arrivalTime}</td>
+                    <td>${entry.departureTime}</td>
+                    <td><span class="hours-badge">${totalHours}h</span></td>
+                    <td>${getTypeLabel(entry.type)}</td>
+                    <td><span class="badge ${entry.status}">${getStatusLabel(entry.status)}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="editEntry(${entry.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn" onclick="deleteEntry(${entry.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Charger les entrées en vue cartes
+        function loadTimeEntriesCards() {
+            const container = document.getElementById('timeEntriesCards');
+            container.innerHTML = '';
+            
+            const filterEmployee = document.getElementById('cardsFilterEmployee').value;
+            const filterDate = document.getElementById('cardsFilterDate').value;
+            
+            let filteredEntries = timeEntries;
+            
+            if (filterEmployee) {
+                filteredEntries = filteredEntries.filter(entry => entry.employeeId === parseInt(filterEmployee));
+            }
+            
+            if (filterDate) {
+                const today = new Date();
+                switch(filterDate) {
+                    case 'today':
+                        const todayStr = today.toISOString().split('T')[0];
+                        filteredEntries = filteredEntries.filter(entry => entry.date === todayStr);
+                        break;
+                    case 'yesterday':
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const yesterdayStr = yesterday.toISOString().split('T')[0];
+                        filteredEntries = filteredEntries.filter(entry => entry.date === yesterdayStr);
+                        break;
+                    case 'week':
+                        const weekStart = new Date(today);
+                        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+                        filteredEntries = filteredEntries.filter(entry => new Date(entry.date) >= weekStart);
+                        break;
+                    case 'month':
+                        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                        filteredEntries = filteredEntries.filter(entry => new Date(entry.date) >= monthStart);
+                        break;
+                }
+            }
+            
+            filteredEntries.forEach(entry => {
+                const employee = employees.find(e => e.id === entry.employeeId);
+                if (!employee) return;
+                
+                const totalHours = calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+                
+                const card = document.createElement('div');
+                card.className = 'time-entry-card';
+                card.innerHTML = `
+                    <div class="time-entry-header">
+                        <div class="employee-info-small">
+                            <div class="employee-avatar-small">${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}</div>
+                            <div>
+                                <strong>${employee.firstName} ${employee.lastName}</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-secondary);">${employee.position}</div>
+                            </div>
+                        </div>
+                        <span class="badge ${entry.status}">${getStatusLabel(entry.status)}</span>
+                    </div>
+                    <div class="time-details">
+                        <div class="time-detail">
+                            <div class="time-detail-label">Date</div>
+                            <div class="time-detail-value">${formatDate(entry.date)}</div>
+                        </div>
+                        <div class="time-detail">
+                            <div class="time-detail-label">Heures</div>
+                            <div class="time-detail-value">${totalHours}h</div>
+                        </div>
+                        <div class="time-detail">
+                            <div class="time-detail-label">Arrivée</div>
+                            <div class="time-detail-value">${entry.arrivalTime}</div>
+                        </div>
+                        <div class="time-detail">
+                            <div class="time-detail-label">Départ</div>
+                            <div class="time-detail-value">${entry.departureTime}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="badge ${entry.type === 'overtime' ? 'overtime' : ''}">${getTypeLabel(entry.type)}</span>
+                        <div>
+                            <button class="action-btn" onclick="editEntry(${entry.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn" onclick="deleteEntry(${entry.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ${entry.notes ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.9rem;">${entry.notes}</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Filtrer les entrées de temps
+        function filterTimeEntries() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterEmployee = document.getElementById('filterEmployee').value;
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterType = document.getElementById('filterType').value;
+            
+            const tableBody = document.getElementById('timeTableBody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const employeeName = row.querySelector('td:first-child strong').textContent.toLowerCase();
+                const date = row.querySelector('td:nth-child(2)').textContent;
+                const type = row.querySelector('td:nth-child(6)').textContent;
+                
+                let matches = true;
+                
+                if (searchTerm && !employeeName.includes(searchTerm)) {
+                    matches = false;
+                }
+                
+                if (filterEmployee) {
+                    const employeeId = row.querySelector('td:first-child').dataset.employeeId;
+                    if (employeeId !== filterEmployee) {
+                        matches = false;
+                    }
+                }
+                
+                if (filterMonth && date.split('/')[1] !== filterMonth) {
+                    matches = false;
+                }
+                
+                if (filterType && type !== filterType) {
+                    matches = false;
+                }
+                
+                row.style.display = matches ? '' : 'none';
+            });
+        }
+
+        // Initialiser les onglets
+        function initTabs() {
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Mettre à jour les boutons d'onglet
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Mettre à jour le contenu des onglets
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tabId) {
+                            content.classList.add('active');
+                        }
+                    });
+                    
+                    // Charger le contenu spécifique à l'onglet
+                    switch(tabId) {
+                        case 'cards':
+                            loadTimeEntriesCards();
+                            break;
+                        case 'analytics':
+                            updateAnalytics();
+                            break;
+                    }
+                });
+            });
+        }
+
+        // Initialiser la recherche
+        function initSearch() {
+            searchInput.addEventListener('input', filterTimeEntries);
+        }
+
+        // Initialiser les filtres
+        function initFilters() {
+            // Remplir les filtres avec les données des employés
+            const filters = ['filterEmployee', 'cardsFilterEmployee', 'analyticsEmployee'];
+            filters.forEach(filterId => {
+                const select = document.getElementById(filterId);
+                if (select) {
+                    select.innerHTML = '<option value="">Tous les employés</option>';
+                    employees.forEach(emp => {
+                        const option = document.createElement('option');
+                        option.value = emp.id;
+                        option.textContent = `${emp.firstName} ${emp.lastName}`;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            // Total employés
+            document.getElementById('totalEmployees').textContent = employees.length;
+            
+            // Calculer les heures
+            const today = new Date().toISOString().split('T')[0];
+            const todayEntries = timeEntries.filter(entry => entry.date === today);
+            const todayHours = todayEntries.reduce((total, entry) => {
+                return total + calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+            }, 0);
+            
+            // Cette semaine
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+            const weekEntries = timeEntries.filter(entry => new Date(entry.date) >= weekStart);
+            const weekHours = weekEntries.reduce((total, entry) => {
+                return total + calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+            }, 0);
+            
+            // Ce mois
+            const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const monthEntries = timeEntries.filter(entry => new Date(entry.date) >= monthStart);
+            const monthHours = monthEntries.reduce((total, entry) => {
+                return total + calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+            }, 0);
+            
+            document.getElementById('todayHours').textContent = todayHours + 'h';
+            document.getElementById('weekHours').textContent = weekHours + 'h';
+            document.getElementById('monthHours').textContent = monthHours + 'h';
+        }
+
+        // Mettre à jour l'analytique
+        function updateAnalytics() {
+            const selectedEmployee = document.getElementById('analyticsEmployee').value;
+            const period = document.getElementById('analyticsPeriod').value;
+            
+            let filteredEntries = timeEntries;
+            
+            if (selectedEmployee) {
+                filteredEntries = filteredEntries.filter(entry => entry.employeeId === parseInt(selectedEmployee));
+            }
+            
+            // Filtrer par période
+            const now = new Date();
+            let startDate;
+            
+            switch(period) {
+                case 'week':
+                    startDate = new Date(now);
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                    break;
+                case 'quarter':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                    break;
+            }
+            
+            filteredEntries = filteredEntries.filter(entry => new Date(entry.date) >= startDate);
+            
+            // Calculer les statistiques
+            const totalHours = filteredEntries.reduce((total, entry) => {
+                return total + calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+            }, 0);
+            
+            const avgDailyHours = filteredEntries.length > 0 ? (totalHours / filteredEntries.length).toFixed(1) : 0;
+            const onTimeEntries = filteredEntries.filter(entry => entry.status === 'on-time').length;
+            const onTimePercentage = filteredEntries.length > 0 ? Math.round((onTimeEntries / filteredEntries.length) * 100) : 0;
+            const overtimeHours = filteredEntries
+                .filter(entry => entry.type === 'overtime')
+                .reduce((total, entry) => total + calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime), 0);
+            const breakTimeAvg = filteredEntries.length > 0 ? 
+                Math.round(filteredEntries.reduce((total, entry) => total + entry.breakTime, 0) / filteredEntries.length) : 0;
+            
+            // Mettre à jour l'UI
+            document.getElementById('totalHoursAnalytics').textContent = `Total: ${totalHours}h`;
+            document.getElementById('avgDailyHours').textContent = avgDailyHours + 'h';
+            document.getElementById('onTimePercentage').textContent = onTimePercentage + '%';
+            document.getElementById('overtimeHours').textContent = overtimeHours + 'h';
+            document.getElementById('breakTimeAvg').textContent = breakTimeAvg + 'min';
+            
+            // Mettre à jour le graphique des heures par jour de la semaine
+            updateHoursChart(filteredEntries);
+        }
+
+        // Mettre à jour le graphique des heures
+        function updateHoursChart(entries) {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const dayHours = [0, 0, 0, 0, 0];
+            
+            entries.forEach(entry => {
+                const date = new Date(entry.date);
+                const dayOfWeek = date.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
+                
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                    const hours = calculateHours(entry.arrivalTime, entry.departureTime, entry.breakTime);
+                    dayHours[dayOfWeek - 1] += hours;
+                }
+            });
+            
+            // Trouver le maximum pour l'échelle
+            const maxHours = Math.max(...dayHours, 8); // Minimum 8h pour l'échelle
+            
+            // Mettre à jour les barres de progression et les labels
+            days.forEach((day, index) => {
+                const bar = document.getElementById(day + 'Bar');
+                const label = bar.parentElement.previousElementSibling.querySelector('span:last-child');
+                
+                const percentage = (dayHours[index] / maxHours) * 100;
+                bar.style.width = percentage + '%';
+                label.textContent = dayHours[index] + 'h';
+            });
+        }
+
+        // Actions rapides
+        function quickClockIn() {
+            const now = new Date();
+            const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+            document.getElementById('arrivalTime').value = currentTime;
+            showNotification('info', 'Heure d\'arrivée définie à ' + currentTime);
+        }
+
+        function quickClockOut() {
+            const now = new Date();
+            const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+            document.getElementById('departureTime').value = currentTime;
+            showNotification('info', 'Heure de départ définie à ' + currentTime);
+        }
+
+        function quickBreakStart() {
+            const breakTime = document.getElementById('breakTime');
+            breakTime.value = parseInt(breakTime.value) + 15;
+            showNotification('info', 'Pause augmentée de 15 minutes');
+        }
+
+        function quickOvertime() {
+            document.getElementById('entryType').value = 'overtime';
+            showNotification('info', 'Type défini sur Heures supplémentaires');
+        }
+
+        // Éditer une entrée
+        function editEntry(id) {
+            const entry = timeEntries.find(e => e.id === id);
+            if (!entry) return;
+            
+            document.getElementById('employeeSelect').value = entry.employeeId;
+            document.getElementById('entryDate').value = entry.date;
+            document.getElementById('arrivalTime').value = entry.arrivalTime;
+            document.getElementById('departureTime').value = entry.departureTime;
+            document.getElementById('breakTime').value = entry.breakTime;
+            document.getElementById('entryType').value = entry.type;
+            document.getElementById('entryNotes').value = entry.notes;
+            
+            // Basculer vers l'onglet de saisie manuelle
+            document.querySelector('[data-tab="manual-entry"]').click();
+            
+            showNotification('info', 'Modification de l\'entrée en cours');
+        }
+
+        // Supprimer une entrée
+        function deleteEntry(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
+                timeEntries = timeEntries.filter(entry => entry.id !== id);
+                localStorage.setItem('smartHR_timeEntries', JSON.stringify(timeEntries));
+                
+                showNotification('success', 'Entrée supprimée avec succès');
+                loadTimeEntries();
+                loadTimeEntriesCards();
+                updateStats();
+                updateAnalytics();
+            }
+        }
+
+        // Fonctions utilitaires
+        function calculateHours(arrival, departure, breakMinutes) {
+            const arrivalTime = new Date(`2000-01-01T${arrival}`);
+            const departureTime = new Date(`2000-01-01T${departure}`);
+            
+            if (departureTime < arrivalTime) {
+                departureTime.setDate(departureTime.getDate() + 1);
+            }
+            
+            const diffMs = departureTime - arrivalTime;
+            const diffMinutes = diffMs / (1000 * 60);
+            const totalMinutes = diffMinutes - breakMinutes;
+            
+            return (totalMinutes / 60).toFixed(1);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        function getTypeLabel(type) {
+            const labels = {
+                'normal': 'Normal',
+                'overtime': 'Heures sup',
+                'weekend': 'Weekend',
+                'holiday': 'Férié'
+            };
+            return labels[type] || type;
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'on-time': 'À l\'heure',
+                'late': 'En retard',
+                'early': 'En avance'
+            };
+            return labels[status] || status;
+        }
+
+        function showNotification(type, message) {
+            // Supprimer les notifications existantes
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <div style="flex: 1;">${message}</div>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Supprimer automatiquement après 5 secondes
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

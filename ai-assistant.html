@@ -9,27 +9,32 @@
 </head>
 <body>
     <!-- Sidebar -->
+<!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo">
             <i class="fas fa-users-cog"></i>
-            <h2>SmartHR Lite</h2>
+            <h2>SmartHR </h2>
         </div>
         <nav class="nav-menu">
-            <a href="index.html" class="nav-item">
+            <a href="index.html" class="nav-item active">
                 <i class="fas fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="index.html" class="nav-item">
+            <a href="employees.html" class="nav-item">
                 <i class="fas fa-users"></i>
                 <span>Employés</span>
             </a>
-            <a href="ai-assistant.html" class="nav-item active">
+            <a href="conges.html" class="nav-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Congés</span>
+            </a>
+            <a href="time-tracking.html" class="nav-item">
+                <i class="fas fa-clock"></i>
+                <span>Pointage</span>
+            </a>
+            <a href="ai-assistant.html" class="nav-item">
                 <i class="fas fa-robot"></i>
                 <span>Assistant IA</span>
-            </a>
-            <a href="#" class="nav-item" data-page="history">
-                <i class="fas fa-history"></i>
-                <span>Historique</span>
             </a>
             <a href="reports.html" class="nav-item">
                 <i class="fas fa-file-alt"></i>
@@ -301,59 +306,100 @@
             if (typing) typing.remove();
         }
 
-        // AI Processing Logic
-        function processQuestion(question) {
-            const q = question.toLowerCase();
+        // AI Processing Logic (Version élargie)
+function processQuestion(question) {
+    const q = question.toLowerCase();
 
-            // Salary Analysis
-            if (q.includes('salaire') && q.includes('moyen')) {
-                return analyzeSalaryByDepartment();
-            }
+    // --- GREETINGS + SMALL TALK ---
+    if (q.includes("bonjour") || q.includes("salut") || q.includes("bonsoir") || q.includes("hello")) {
+        return "Bonjour 😊 Comment puis-je vous aider aujourd’hui ?";
+    }
 
-            // Performance Analysis
-            if (q.includes('performer') || q.includes('meilleur')) {
-                return analyzeTopPerformers();
-            }
+    if (q.includes("ça va") || q.includes("comment vas") || q.includes("tu vas bien")) {
+        return "Je vais très bien, merci ! Et vous ? 🤖";
+    }
 
-            // Team Distribution
-            if (q.includes('répartition') || q.includes('distribution')) {
-                return analyzeTeamDistribution();
-            }
+    if (q.includes("merci")) {
+        return "Avec plaisir ! Je suis toujours là pour vous aider 😄";
+    }
 
-            // Salary Increase Recommendations
-            if (q.includes('augmentation') || q.includes('promotion')) {
-                return recommendSalaryIncrease();
-            }
+    if (q.includes("qui es-tu") || q.includes("tu es qui") || q.includes("c'est quoi")) {
+        return "Je suis l'assistant IA de SmartHR Lite, je vous aide à analyser vos données RH.";
+    }
 
-            // Turnover Risk
-            if (q.includes('turnover') || q.includes('risque')) {
-                return analyzeTurnoverRisk();
-            }
+    // --- SALARY ANALYSIS ---
+    if (
+        (q.includes('salaire') || q.includes('paie') || q.includes('rémunération')) &&
+        (q.includes('moyen') || q.includes('analyse') || q.includes('moyenne'))
+    ) {
+        return analyzeSalaryByDepartment();
+    }
 
-            // Training Suggestions
-            if (q.includes('formation') || q.includes('training')) {
-                return suggestTraining();
-            }
+    // --- PERFORMANCE ANALYSIS ---
+    if (
+        q.includes('performer') || q.includes('meilleur') ||
+        q.includes('top') || q.includes('productif')
+    ) {
+        return analyzeTopPerformers();
+    }
 
-            // Department Info
-            if (q.includes('département') || q.includes('department')) {
-                const dept = extractDepartment(q);
-                if (dept) return analyzeDepartment(dept);
-            }
+    // --- TEAM DISTRIBUTION ---
+    if (
+        q.includes('répartition') || q.includes('distribution') ||
+        q.includes('structure') || q.includes('organigramme')
+    ) {
+        return analyzeTeamDistribution();
+    }
 
-            // Employee Search
-            if (q.includes('qui') || q.includes('employé')) {
-                return searchEmployees(q);
-            }
+    // --- SALARY INCREASE RECOMMENDATION ---
+    if (
+        q.includes('augmentation') || q.includes('promotion') ||
+        q.includes('hausse') || q.includes('augmentation salariale')
+    ) {
+        return recommendSalaryIncrease();
+    }
 
-            // Budget Analysis
-            if (q.includes('budget') || q.includes('coût')) {
-                return analyzeBudget();
-            }
+    // --- TURNOVER RISK ---
+    if (
+        q.includes('turnover') || q.includes('risque') ||
+        q.includes('démission') || q.includes('départ')
+    ) {
+        return analyzeTurnoverRisk();
+    }
 
-            // Default response
-            return generateDefaultResponse(q);
-        }
+    // --- TRAINING SUGGESTIONS ---
+    if (
+        q.includes('formation') || q.includes('training') ||
+        q.includes('compétence') || q.includes('améliorer')
+    ) {
+        return suggestTraining();
+    }
+
+    // --- DEPARTMENT ANALYSIS ---
+    if (q.includes('département') || q.includes('department') || q.includes('service')) {
+        const dept = extractDepartment(q);
+        if (dept) return analyzeDepartment(dept);
+    }
+
+    // --- EMPLOYEE SEARCH ---
+    if (
+        q.includes('qui') || q.includes('employé') || q.includes('employe') ||
+        q.includes('staff') || q.includes('personnel')
+    ) {
+        return searchEmployees(q);
+    }
+
+    // --- BUDGET ANALYSIS ---
+    if (
+        q.includes('budget') || q.includes('coût') ||
+        q.includes('cout') || q.includes('financier')
+    ) {
+        return analyzeBudget();
+    }
+
+    // --- DEFAULT REPLY ---
+    return generateDefaultResponse(q);
+}
 
         // Analysis Functions
         function analyzeSalaryByDepartment() {

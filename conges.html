@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Congés - SmartHR Lite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1.5rem 2rem;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h2 {
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-primary);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-primary);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+
+        .stat-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tabs Navigation */
+        .tabs-nav {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-success:hover,
+        .btn-danger:hover,
+        .btn-warning:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: var(--bg-primary);
+        }
+
+        .table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge.approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        body.dark-mode .badge.pending {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        body.dark-mode .badge.approved {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        body.dark-mode .badge.rejected {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        /* Leave Cards Grid */
+        .leave-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .leave-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .leave-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .leave-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .leave-card-employee {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .employee-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .leave-card-info {
+            margin-bottom: 1rem;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .info-row i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .leave-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .leave-card-actions button {
+            flex: 1;
+        }
+
+        /* Calendar View */
+        .calendar-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-nav button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: var(--bg-primary);
+            border-color: var(--primary);
+        }
+
+        .calendar-day.has-leave {
+            background: rgba(79, 70, 229, 0.1);
+            border-color: var(--primary);
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day-indicator {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 300px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success { border-left: 4px solid var(--success); }
+        .notification.error { border-left: 4px solid var(--danger); }
+        .notification.info { border-left: 4px solid var(--info); }
+
+        .notification i {
+            font-size: 1.5rem;
+        }
+
+        .notification.success i { color: var(--success); }
+        .notification.error i { color: var(--danger); }
+        .notification.info i { color: var(--info); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 70px;
+            }
+            .main-content {
+                margin-left: 70px;
+                padding: 1rem;
+            }
+            .logo h2,
+            .nav-item span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+<!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-users-cog"></i>
+            <h2>SmartHR </h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="employees.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            </a>
+            <a href="conges.html" class="nav-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Congés</span>
+            </a>
+            <a href="time-tracking.html" class="nav-item">
+                <i class="fas fa-clock"></i>
+                <span>Pointage</span>
+            </a>
+            <a href="ai-assistant.html" class="nav-item">
+                <i class="fas fa-robot"></i>
+                <span>Assistant IA</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Rapports</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <i class="fas fa-info-circle"></i>
+                <span>À Propos</span>
+            </a>
+        </nav>
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+    </aside>
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1><i class="fas fa-calendar-alt"></i> Gestion des Congés</h1>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalLeaves">0</h3>
+                    <p>Total des demandes</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="pendingLeaves">0</h3>
+                    <p>En attente</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="approvedLeaves">0</h3>
+                    <p>Approuvées</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="rejectedLeaves">0</h3>
+                    <p>Refusées</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="new-request">
+                <i class="fas fa-plus-circle"></i> Nouvelle demande
+            </button>
+            <button class="tab-btn" data-tab="list-view">
+                <i class="fas fa-list"></i> Liste
+            </button>
+            <button class="tab-btn" data-tab="card-view">
+                <i class="fas fa-th-large"></i> Cartes
+            </button>
+            <button class="tab-btn" data-tab="calendar-view">
+                <i class="fas fa-calendar"></i> Calendrier
+            </button>
+        </div>
+
+        <!-- Tab: Nouvelle demande -->
+        <div class="tab-content active" id="new-request">
+            <div class="card">
+                <h2><i class="fas fa-paper-plane"></i> Nouvelle demande de congé</h2>
+                <form id="leaveForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Employé *</label>
+                            <select id="employeeSelect" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar"></i> Type de congé *</label>
+                            <select id="leaveType" required>
+                                <option value="Annuel">Congé annuel</option>
+                                <option value="Maladie">Congé maladie</option>
+                                <option value="Exceptionnel">Congé exceptionnel</option>
+                                <option value="Sans solde">Congé sans solde</option>
+                                <option value="Maternité">Congé maternité</option>
+                                <option value="Paternité">Congé paternité</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-day"></i> Date de début *</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-day"></i> Date de fin *</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label><i class="fas fa-comment"></i> Motif / Commentaire</label>
+                            <textarea id="leaveReason" placeholder="Décrivez brièvement la raison de votre demande..."></textarea>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                        <button type="button" class="btn" style="background: var(--bg-primary); color: var(--text-primary);" onclick="document.getElementById('leaveForm').reset()">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Envoyer la demande
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Liste -->
+        <div class="tab-content" id="list-view">
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Liste des demandes</h2>
+                
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Rechercher un employé...">
+                    </div>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="pending">En attente</option>
+                        <option value="approved">Approuvées</option>
+                        <option value="rejected">Refusées</option>
+                    </select>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">Tous les types</option>
+                        <option value="Annuel">Annuel</option>
+                        <option value="Maladie">Maladie</option>
+                        <option value="Exceptionnel">Exceptionnel</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Type</th>
+                                <th>Début</th>
+                                <th>Fin</th>
+                                <th>Jours</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaveTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Cartes -->
+        <div class="tab-content" id="card-view">
+            <div class="filters-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInputCards" placeholder="Rechercher un employé...">
+                </div>
+                <select class="filter-select" id="statusFilterCards">
+                    <option value="">Tous les statuts</option>
+                    <option value="pending">En attente</option>
+                    <option value="approved">Approuvées</option>
+                    <option value="rejected">Refusées</option>
+                </select>
+            </div>
+            <div class="leave-cards" id="leaveCards"></div>
+        </div>
+
+        <!-- Tab: Calendrier -->
+        <div class="tab-content" id="calendar-view">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 id="calendarMonth"></h3>
+                    <div class="calendar-nav">
+                        <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <button onclick="changeMonth(0)">Aujourd'hui</button>
+                        <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Données
+        let employees = [];
+        let leaves = [];
+        let currentDate = new Date();
+
+        // Initialisation
+        function init() {
+            // Créer des employés de test si aucun n'existe
+            const storedEmployees = JSON.parse(localStorage.getItem('employees') || '[]');
+            if (storedEmployees.length === 0) {
+                employees = [
+                    { id: '1', name: 'Ahmed Ben Ali', department: 'IT', position: 'Développeur' },
+                    { id: '2', name: 'Fatma Mansour', department: 'RH', position: 'Manager RH' },
+                    { id: '3', name: 'Mohamed Trabelsi', department: 'Finance', position: 'Comptable' },
+                    { id: '4', name: 'Sana Gharbi', department: 'Marketing', position: 'Responsable Marketing' }
+                ];
+                localStorage.setItem('employees', JSON.stringify(employees));
+            } else {
+                employees = storedEmployees;
+            }
+
+            // Charger les congés
+            leaves = JSON.parse(localStorage.getItem('leaves') || '[]');
+            
+            loadEmployees();
+            updateStats();
+            renderLeaveTable();
+            renderLeaveCards();
+            renderCalendar();
+            setupEventListeners();
+            loadTheme();
+        }
+
+        // Charger les employés dans le select
+        function loadEmployees() {
+            const select = document.getElementById('employeeSelect');
+            select.innerHTML = '<option value="">Sélectionner un employé</option>';
+            employees.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.textContent = `${emp.name} - ${emp.department}`;
+                select.appendChild(opt);
+            });
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const pending = leaves.filter(l => l.status === 'pending').length;
+            const approved = leaves.filter(l => l.status === 'approved').length;
+            const rejected = leaves.filter(l => l.status === 'rejected').length;
+            
+            document.getElementById('totalLeaves').textContent = leaves.length;
+            document.getElementById('pendingLeaves').textContent = pending;
+            document.getElementById('approvedLeaves').textContent = approved;
+            document.getElementById('rejectedLeaves').textContent = rejected;
+        }
+
+        // Calculer le nombre de jours
+        function calculateDays(start, end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const diff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            return diff;
+        }
+
+        // Formater la date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // Afficher le tableau
+        function renderLeaveTable() {
+            const tbody = document.getElementById('leaveTable');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            let filteredLeaves = leaves.filter(l => {
+                const matchSearch = l.employeeName.toLowerCase().includes(searchTerm);
+                const matchStatus = !statusFilter || l.status === statusFilter;
+                const matchType = !typeFilter || l.type === typeFilter;
+                return matchSearch && matchStatus && matchType;
+            });
+
+            if (filteredLeaves.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Aucune demande trouvée</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredLeaves.map(l => {
+                const days = calculateDays(l.start, l.end);
+                const statusBadge = {
+                    'pending': '<span class="badge pending"><i class="fas fa-clock"></i> En attente</span>',
+                    'approved': '<span class="badge approved"><i class="fas fa-check"></i> Approuvée</span>',
+                    'rejected': '<span class="badge rejected"><i class="fas fa-times"></i> Refusée</span>'
+                };
+                
+                const actions = l.status === 'pending' ? `
+                    <button class="btn btn-success" onclick="updateLeaveStatus('${l.id}', 'approved')">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn btn-danger" onclick="updateLeaveStatus('${l.id}', 'rejected')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                ` : `
+                    <button class="btn btn-warning" onclick="updateLeaveStatus('${l.id}', 'pending')">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                `;
+
+                return `
+                    <tr>
+                        <td><strong>${l.employeeName}</strong></td>
+                        <td>${l.type}</td>
+                        <td>${formatDate(l.start)}</td>
+                        <td>${formatDate(l.end)}</td>
+                        <td><strong>${days}</strong> jour${days > 1 ? 's' : ''}</td>
+                        <td>${statusBadge[l.status]}</td>
+                        <td style="display: flex; gap: 0.5rem;">${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Afficher les cartes
+        function renderLeaveCards() {
+            const container = document.getElementById('leaveCards');
+            const searchTerm = document.getElementById('searchInputCards').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilterCards').value;
+
+            let filteredLeaves = leaves.filter(l => {
+                const matchSearch = l.employeeName.toLowerCase().includes(searchTerm);
+                const matchStatus = !statusFilter || l.status === statusFilter;
+                return matchSearch && matchStatus;
+            });
+
+            if (filteredLeaves.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">Aucune demande trouvée</div>';
+                return;
+            }
+
+            container.innerHTML = filteredLeaves.map(l => {
+                const days = calculateDays(l.start, l.end);
+                const statusBadge = {
+                    'pending': '<span class="badge pending"><i class="fas fa-clock"></i> En attente</span>',
+                    'approved': '<span class="badge approved"><i class="fas fa-check"></i> Approuvée</span>',
+                    'rejected': '<span class="badge rejected"><i class="fas fa-times"></i> Refusée</span>'
+                };
+
+                const initials = l.employeeName.split(' ').map(n => n[0]).join('');
+                
+                const actions = l.status === 'pending' ? `
+                    <button class="btn btn-success" onclick="updateLeaveStatus('${l.id}', 'approved')">
+                        <i class="fas fa-check"></i> Approuver
+                    </button>
+                    <button class="btn btn-danger" onclick="updateLeaveStatus('${l.id}', 'rejected')">
+                        <i class="fas fa-times"></i> Refuser
+                    </button>
+                ` : `
+                    <button class="btn btn-warning" onclick="updateLeaveStatus('${l.id}', 'pending')" style="flex: 1;">
+                        <i class="fas fa-undo"></i> Réinitialiser
+                    </button>
+                `;
+
+                return `
+                    <div class="leave-card">
+                        <div class="leave-card-header">
+                            <div class="leave-card-employee">
+                                <div class="employee-avatar-small">${initials}</div>
+                                <div>
+                                    <strong>${l.employeeName}</strong>
+                                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${l.type}</div>
+                                </div>
+                            </div>
+                            ${statusBadge[l.status]}
+                        </div>
+                        <div class="leave-card-info">
+                            <div class="info-row">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>Du ${formatDate(l.start)}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>Au ${formatDate(l.end)}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span><strong>${days}</strong> jour${days > 1 ? 's' : ''}</span>
+                            </div>
+                            ${l.reason ? `
+                            <div class="info-row">
+                                <i class="fas fa-comment"></i>
+                                <span>${l.reason}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="leave-card-actions">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Afficher le calendrier
+        function renderCalendar() {
+            const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                               'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            
+            document.getElementById('calendarMonth').textContent = 
+                `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // En-têtes des jours
+            dayNames.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                grid.appendChild(dayHeader);
+            });
+            
+            // Premier jour du mois
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+            
+            // Jours vides avant le premier jour
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+            
+            // Jours du mois
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                
+                const currentDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                // Vérifier s'il y a des congés ce jour
+                const hasLeave = leaves.some(l => {
+                    const start = new Date(l.start);
+                    const end = new Date(l.end);
+                    const current = new Date(currentDateStr);
+                    return current >= start && current <= end && l.status === 'approved';
+                });
+                
+                if (hasLeave) {
+                    dayCell.classList.add('has-leave');
+                    dayCell.innerHTML = `
+                        <div class="calendar-day-number">${day}</div>
+                        <div class="calendar-day-indicator"></div>
+                    `;
+                } else {
+                    dayCell.innerHTML = `<div class="calendar-day-number">${day}</div>`;
+                }
+                
+                grid.appendChild(dayCell);
+            }
+        }
+
+        // Changer de mois
+        function changeMonth(delta) {
+            if (delta === 0) {
+                currentDate = new Date();
+            } else {
+                currentDate.setMonth(currentDate.getMonth() + delta);
+            }
+            renderCalendar();
+        }
+
+        // Soumettre le formulaire
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const empId = document.getElementById('employeeSelect').value;
+            if (!empId) {
+                showNotification('Veuillez sélectionner un employé', 'error');
+                return;
+            }
+            
+            const emp = employees.find(e => e.id === empId);
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            
+            if (new Date(end) < new Date(start)) {
+                showNotification('La date de fin doit être après la date de début', 'error');
+                return;
+            }
+            
+            const newLeave = {
+                id: Date.now().toString(),
+                employeeId: empId,
+                employeeName: emp.name,
+                type: document.getElementById('leaveType').value,
+                start: start,
+                end: end,
+                reason: document.getElementById('leaveReason').value,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            
+            leaves.push(newLeave);
+            localStorage.setItem('leaves', JSON.stringify(leaves));
+            
+            updateStats();
+            renderLeaveTable();
+            renderLeaveCards();
+            renderCalendar();
+            
+            this.reset();
+            showNotification('Demande de congé envoyée avec succès !', 'success');
+        });
+
+        // Mettre à jour le statut
+        function updateLeaveStatus(id, status) {
+            const leave = leaves.find(l => l.id === id);
+            if (leave) {
+                leave.status = status;
+                localStorage.setItem('leaves', JSON.stringify(leaves));
+                
+                updateStats();
+                renderLeaveTable();
+                renderLeaveCards();
+                renderCalendar();
+                
+                const messages = {
+                    'approved': 'Demande approuvée',
+                    'rejected': 'Demande refusée',
+                    'pending': 'Statut réinitialisé'
+                };
+                showNotification(messages[status], 'success');
+            }
+        }
+
+        // Afficher une notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'info': 'fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <i class="fas ${icons[type]}"></i>
+                <div class="notification-text">${message}</div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Configurer les écouteurs d'événements
+        function setupEventListeners() {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // Filtres
+            document.getElementById('searchInput').addEventListener('input', renderLeaveTable);
+            document.getElementById('statusFilter').addEventListener('change', renderLeaveTable);
+            document.getElementById('typeFilter').addEventListener('change', renderLeaveTable);
+            document.getElementById('searchInputCards').addEventListener('input', renderLeaveCards);
+            document.getElementById('statusFilterCards').addEventListener('change', renderLeaveCards);
+            
+            // Thème
+            document.getElementById('themeToggle').addEventListener('change', function() {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            });
+        }
+
+        // Charger le thème
+        function loadTheme() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').checked = true;
+            }
+        }
+
+        // Initialiser au chargement
+        init();
+    </script>
+</body>
+</html>
