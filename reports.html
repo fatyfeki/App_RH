@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports - SmartHR Lite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Notifications -->
+    <div id="notificationContainer"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-users-cog"></i>
+            <h2>SmartHR Lite</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            </a>
+            <a href="ai-assistant.html" class="nav-item active">
+                <i class="fas fa-robot"></i>
+                <span>Assistant IA</span>
+            </a>
+            <a href="#" class="nav-item" data-page="history">
+                <i class="fas fa-history"></i>
+                <span>Historique</span>
+            </a>
+            <a href="reports.html" class="nav-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>Rapports</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <i class="fas fa-info-circle"></i>
+                <span>À Propos</span>
+            </a>
+        </nav>
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1>Rapports et Analyses</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="generateReport()">
+                    <i class="fas fa-file-pdf"></i> Générer Rapport PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="page active">
+            <!-- Report Filters -->
+            <div class="report-filters">
+                <div class="filter-card">
+                    <label>Type de rapport</label>
+                    <select id="reportType" class="filter-select">
+                        <option value="general">Rapport Général</option>
+                        <option value="department">Par Département</option>
+                        <option value="salary">Analyse Salariale</option>
+                        <option value="hiring">Embauches</option>
+                    </select>
+                </div>
+                <div class="filter-card">
+                    <label>Période</label>
+                    <select id="reportPeriod" class="filter-select">
+                        <option value="month">Ce mois</option>
+                        <option value="quarter">Ce trimestre</option>
+                        <option value="year">Cette année</option>
+                        <option value="all">Tout</option>
+                    </select>
+                </div>
+                <div class="filter-card">
+                    <button class="btn btn-secondary" onclick="refreshReport()">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="summary-info">
+                        <h3 id="reportTotal">0</h3>
+                        <p>Total Employés</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon green">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="summary-info">
+                        <h3 id="reportGrowth">+0%</h3>
+                        <p>Croissance</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon orange">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="summary-info">
+                        <h3 id="reportTotalSalary">0€</h3>
+                        <p>Masse Salariale</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon purple">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="summary-info">
+                        <h3 id="reportTurnover">0%</h3>
+                        <p>Taux de Rotation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Analysis -->
+            <div class="report-section">
+                <div class="section-title">
+                    <h2><i class="fas fa-building"></i> Analyse par Département</h2>
+                </div>
+                <div class="table-container">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Département</th>
+                                <th>Employés</th>
+                                <th>Salaire Moyen</th>
+                                <th>Salaire Total</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Salary Distribution Chart -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <h3>Distribution des Salaires</h3>
+                    <canvas id="salaryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Répartition par Statut</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="report-section">
+                <div class="section-title">
+                    <h2><i class="fas fa-clock"></i> Activités Récentes</h2>
+                </div>
+                <div id="recentActivities" class="activities-list"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        let employees = JSON.parse(localStorage.getItem('employees')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+
+        // Theme Management
+        function initializeTheme() {
+            const hour = new Date().getHours();
+            const isDark = hour >= 20 || hour < 6;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+
+            themeToggle.addEventListener('change', () => {
+                document.body.classList.toggle('dark-mode');
+            });
+        }
+
+        // Generate Report Summary
+        function generateReportSummary() {
+            const total = employees.length;
+            const activeEmployees = employees.filter(e => e.status === 'Actif').length;
+            const totalSalary = employees.reduce((sum, e) => sum + parseFloat(e.salary || 0), 0);
+            
+            // Calculate growth (mock data based on hire dates)
+            const lastMonth = new Date();
+            lastMonth.setMonth(lastMonth.getMonth() - 1);
+            const newHires = employees.filter(e => new Date(e.hireDate) >= lastMonth).length;
+            const growth = total > 0 ? ((newHires / total) * 100).toFixed(1) : 0;
+
+            document.getElementById('reportTotal').textContent = total;
+            document.getElementById('reportGrowth').textContent = '+' + growth + '%';
+            document.getElementById('reportTotalSalary').textContent = totalSalary.toLocaleString() + '€';
+            document.getElementById('reportTurnover').textContent = '2.5%'; // Mock data
+        }
+
+        // Generate Department Table
+        function generateDepartmentTable() {
+            const departments = {};
+            
+            employees.forEach(emp => {
+                if (!departments[emp.department]) {
+                    departments[emp.department] = {
+                        count: 0,
+                        totalSalary: 0,
+                        totalPerformance: 0
+                    };
+                }
+                departments[emp.department].count++;
+                departments[emp.department].totalSalary += parseFloat(emp.salary || 0);
+                departments[emp.department].totalPerformance += emp.performance || 4;
+            });
+
+            const tableBody = document.getElementById('departmentTable');
+            tableBody.innerHTML = '';
+
+            Object.keys(departments).forEach(dept => {
+                const data = departments[dept];
+                const avgSalary = data.totalSalary / data.count;
+                const avgPerformance = data.totalPerformance / data.count;
+                
+                const stars = '★'.repeat(Math.round(avgPerformance)) + '☆'.repeat(5 - Math.round(avgPerformance));
+
+                const row = `
+                    <tr>
+                        <td><strong>${dept}</strong></td>
+                        <td>${data.count}</td>
+                        <td>${avgSalary.toLocaleString()}€</td>
+                        <td>${data.totalSalary.toLocaleString()}€</td>
+                        <td class="performance-stars">${stars}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Generate Salary Chart
+        function generateSalaryChart() {
+            const ctx = document.getElementById('salaryChart');
+            if (!ctx) return;
+
+            const ranges = {
+                '< 35k': 0,
+                '35k - 42k': 0,
+                '42k - 50k': 0,
+                '> 50k': 0
+            };
+
+            employees.forEach(emp => {
+                const salary = parseFloat(emp.salary || 0);
+                if (salary < 35000) ranges['< 35k']++;
+                else if (salary < 42000) ranges['35k - 42k']++;
+                else if (salary < 50000) ranges['42k - 50k']++;
+                else ranges['> 50k']++;
+            });
+
+            if (window.salaryChart) window.salaryChart.destroy();
+
+            window.salaryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ranges),
+                    datasets: [{
+                        label: 'Nombre d\'employés',
+                        data: Object.values(ranges),
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generate Status Chart
+        function generateStatusChart() {
+            const ctx = document.getElementById('statusChart');
+            if (!ctx) return;
+
+            const statuses = {};
+            employees.forEach(emp => {
+                statuses[emp.status] = (statuses[emp.status] || 0) + 1;
+            });
+
+            if (window.statusChart) window.statusChart.destroy();
+
+            window.statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statuses),
+                    datasets: [{
+                        data: Object.values(statuses),
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display Recent Activities
+        function displayRecentActivities() {
+            const container = document.getElementById('recentActivities');
+            const recentHistory = history.slice(0, 5);
+
+            if (recentHistory.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem;">Aucune activité récente</p>';
+                return;
+            }
+
+            container.innerHTML = recentHistory.map(item => {
+                const icon = item.type === 'add' ? 'fa-plus' : item.type === 'edit' ? 'fa-edit' : 'fa-trash';
+                const date = new Date(item.timestamp).toLocaleDateString('fr-FR');
+                
+                return `
+                    <div class="activity-item">
+                        <div class="activity-icon ${item.type}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>${item.message}</h4>
+                            <p>${date}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Generate PDF Report
+        function generateReport() {
+            showNotification('Génération du rapport PDF en cours...', 'info');
+            
+            setTimeout(() => {
+                const reportContent = `
+                    RAPPORT RH - ${new Date().toLocaleDateString('fr-FR')}
+                    
+                    Total Employés: ${employees.length}
+                    Masse Salariale: ${employees.reduce((s, e) => s + parseFloat(e.salary || 0), 0).toLocaleString()}€
+                    
+                    Départements: ${new Set(employees.map(e => e.department)).size}
+                `;
+                
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `rapport_rh_${new Date().toISOString().split('T')[0]}.txt`;
+                a.click();
+                
+                showNotification('Rapport généré avec succès', 'success');
+            }, 1500);
+        }
+
+        // Refresh Report
+        function refreshReport() {
+            showNotification('Actualisation des données...', 'info');
+            employees = JSON.parse(localStorage.getItem('employees')) || [];
+            history = JSON.parse(localStorage.getItem('history')) || [];
+            initializeReport();
+            showNotification('Données actualisées', 'success');
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <i class="fas ${icons[type]}"></i>
+                <div class="notification-text">${message}</div>
+            `;
+            
+            container.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initialize Report
+        function initializeReport() {
+            generateReportSummary();
+            generateDepartmentTable();
+            generateSalaryChart();
+            generateStatusChart();
+            displayRecentActivities();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            initializeReport();
+        });
+    </script>
+
+    <style>
+        .report-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-card {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-card label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .summary-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .summary-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .summary-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .summary-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .summary-icon.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+
+        .summary-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .report-section {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-title h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-table thead {
+            background: var(--bg-primary);
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .report-table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .report-table tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .activities-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .activity-icon.add { background: var(--success); }
+        .activity-icon.edit { background: var(--warning); }
+        .activity-icon.delete { background: var(--danger); }
+
+        .activity-content h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-content p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant IA - SmartHR Lite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-users-cog"></i>
+            <h2>SmartHR Lite</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            </a>
+            <a href="ai-assistant.html" class="nav-item active">
+                <i class="fas fa-robot"></i>
+                <span>Assistant IA</span>
+            </a>
+            <a href="#" class="nav-item" data-page="history">
+                <i class="fas fa-history"></i>
+                <span>Historique</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Rapports</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <i class="fas fa-info-circle"></i>
+                <span>À Propos</span>
+            </a>
+        </nav>
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <div>
+                <h1>🤖 Assistant IA RH</h1>
+                <p style="color: var(--text-secondary); margin-top: 0.5rem;">Posez-moi n'importe quelle question sur vos employés et données RH</p>
+            </div>
+            <button class="btn btn-secondary" id="clearChatBtn">
+                <i class="fas fa-trash"></i> Effacer l'historique
+            </button>
+        </header>
+
+        <div class="page active">
+            <div class="ai-container">
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3><i class="fas fa-bolt"></i> Questions rapides</h3>
+                    <div class="quick-buttons">
+                        <button class="quick-btn" onclick="askQuestion('Quel est le salaire moyen par département ?')">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Salaire moyen par département
+                        </button>
+                        <button class="quick-btn" onclick="askQuestion('Qui sont les meilleurs performers ?')">
+                            <i class="fas fa-star"></i>
+                            Meilleurs performers
+                        </button>
+                        <button class="quick-btn" onclick="askQuestion('Analyse la répartition des employés')">
+                            <i class="fas fa-chart-pie"></i>
+                            Répartition des équipes
+                        </button>
+                        <button class="quick-btn" onclick="askQuestion('Quels employés méritent une augmentation ?')">
+                            <i class="fas fa-arrow-up"></i>
+                            Recommandations d\'augmentation
+                        </button>
+                        <button class="quick-btn" onclick="askQuestion('Analyse les risques de turnover')">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Risques de turnover
+                        </button>
+                        <button class="quick-btn" onclick="askQuestion('Suggestions de formation pour l\'équipe')">
+                            <i class="fas fa-graduation-cap"></i>
+                            Suggestions de formation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <strong>Assistant IA</strong>
+                                <p>Bonjour ! Je suis votre assistant RH intelligent. Je peux analyser vos données, vous donner des recommandations et répondre à toutes vos questions sur vos employés. Comment puis-je vous aider aujourd'hui ?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="chat-input-container">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            placeholder="Posez votre question ici..." 
+                            onkeypress="if(event.key==='Enter') sendMessage()"
+                        >
+                        <button class="btn btn-primary" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Panel -->
+                <div class="stats-panel">
+                    <h3><i class="fas fa-chart-line"></i> Statistiques en temps réel</h3>
+                    <div class="stat-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <strong id="statTotal">0</strong>
+                            <span>Employés totaux</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-building"></i>
+                        <div>
+                            <strong id="statDepts">0</strong>
+                            <span>Départements</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <div>
+                            <strong id="statPerformers">0</strong>
+                            <span>Top performers</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <div>
+                            <strong id="statAvgSalary">0€</strong>
+                            <span>Salaire moyen</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notificationContainer"></div>
+
+    <script>
+        // Get employees data
+        let employees = JSON.parse(localStorage.getItem('employees')) || [];
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+        // Theme Management
+        const hour = new Date().getHours();
+        const isDark = hour >= 20 || hour < 6;
+        const themeToggle = document.getElementById('themeToggle');
+        
+        if (isDark) {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        }
+
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            loadChatHistory();
+        });
+
+        // Update Stats
+        function updateStats() {
+            const totalSalary = employees.reduce((sum, emp) => sum + parseFloat(emp.salary), 0);
+            const avgSalary = employees.length > 0 ? totalSalary / employees.length : 0;
+            const topPerformers = employees.filter(emp => emp.performance >= 5).length;
+            const depts = new Set(employees.map(emp => emp.department)).size;
+
+            document.getElementById('statTotal').textContent = employees.length;
+            document.getElementById('statDepts').textContent = depts;
+            document.getElementById('statPerformers').textContent = topPerformers;
+            document.getElementById('statAvgSalary').textContent = Math.round(avgSalary).toLocaleString() + '€';
+        }
+
+        // Load Chat History
+        function loadChatHistory() {
+            const container = document.getElementById('chatMessages');
+            chatHistory.forEach(msg => {
+                addMessageToUI(msg.role, msg.content, false);
+            });
+        }
+
+        // Send Message
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+
+            // Add user message
+            addMessageToUI('user', question);
+            chatHistory.push({ role: 'user', content: question });
+            
+            input.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Process question and get response
+            setTimeout(() => {
+                const response = processQuestion(question);
+                hideTypingIndicator();
+                addMessageToUI('bot', response);
+                chatHistory.push({ role: 'bot', content: response });
+                saveChatHistory();
+            }, 1000 + Math.random() * 1000);
+        }
+
+        // Ask Quick Question
+        function askQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
+        // Add Message to UI
+        function addMessageToUI(role, content, animate = true) {
+            const container = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+            if (animate) messageDiv.style.animation = 'slideIn 0.3s ease';
+
+            if (role === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <strong>Assistant IA</strong>
+                        <p>${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <strong>Vous</strong>
+                        <p>${content}</p>
+                    </div>
+                    <div class="message-avatar user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                `;
+            }
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Typing Indicator
+        function showTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const typing = document.createElement('div');
+            typing.id = 'typingIndicator';
+            typing.className = 'message bot-message';
+            typing.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(typing);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        // AI Processing Logic
+        function processQuestion(question) {
+            const q = question.toLowerCase();
+
+            // Salary Analysis
+            if (q.includes('salaire') && q.includes('moyen')) {
+                return analyzeSalaryByDepartment();
+            }
+
+            // Performance Analysis
+            if (q.includes('performer') || q.includes('meilleur')) {
+                return analyzeTopPerformers();
+            }
+
+            // Team Distribution
+            if (q.includes('répartition') || q.includes('distribution')) {
+                return analyzeTeamDistribution();
+            }
+
+            // Salary Increase Recommendations
+            if (q.includes('augmentation') || q.includes('promotion')) {
+                return recommendSalaryIncrease();
+            }
+
+            // Turnover Risk
+            if (q.includes('turnover') || q.includes('risque')) {
+                return analyzeTurnoverRisk();
+            }
+
+            // Training Suggestions
+            if (q.includes('formation') || q.includes('training')) {
+                return suggestTraining();
+            }
+
+            // Department Info
+            if (q.includes('département') || q.includes('department')) {
+                const dept = extractDepartment(q);
+                if (dept) return analyzeDepartment(dept);
+            }
+
+            // Employee Search
+            if (q.includes('qui') || q.includes('employé')) {
+                return searchEmployees(q);
+            }
+
+            // Budget Analysis
+            if (q.includes('budget') || q.includes('coût')) {
+                return analyzeBudget();
+            }
+
+            // Default response
+            return generateDefaultResponse(q);
+        }
+
+        // Analysis Functions
+        function analyzeSalaryByDepartment() {
+            const deptData = {};
+            employees.forEach(emp => {
+                if (!deptData[emp.department]) {
+                    deptData[emp.department] = { total: 0, count: 0 };
+                }
+                deptData[emp.department].total += parseFloat(emp.salary);
+                deptData[emp.department].count++;
+            });
+
+            let response = '📊 <strong>Analyse des salaires par département :</strong><br><br>';
+            Object.keys(deptData).forEach(dept => {
+                const avg = Math.round(deptData[dept].total / deptData[dept].count);
+                response += `<strong>${dept}</strong> : ${avg.toLocaleString()}€ (${deptData[dept].count} employés)<br>`;
+            });
+
+            const globalAvg = Math.round(employees.reduce((s, e) => s + parseFloat(e.salary), 0) / employees.length);
+            response += `<br>💰 <strong>Moyenne globale :</strong> ${globalAvg.toLocaleString()}€`;
+
+            return response;
+        }
+
+        function analyzeTopPerformers() {
+            const topPerformers = employees
+                .filter(emp => emp.performance >= 4)
+                .sort((a, b) => b.performance - a.performance)
+                .slice(0, 5);
+
+            let response = '⭐ <strong>Top 5 des meilleurs performers :</strong><br><br>';
+            topPerformers.forEach((emp, i) => {
+                response += `${i + 1}. <strong>${emp.name}</strong> - ${emp.position} (${emp.department})<br>`;
+                response += `   Performance : ${'★'.repeat(emp.performance)}${'☆'.repeat(5 - emp.performance)}<br><br>`;
+            });
+
+            response += `<br>💡 <strong>Recommandation :</strong> Ces employés sont vos meilleurs atouts. Envisagez des opportunités de croissance pour les retenir.`;
+
+            return response;
+        }
+
+        function analyzeTeamDistribution() {
+            const deptCount = {};
+            employees.forEach(emp => {
+                deptCount[emp.department] = (deptCount[emp.department] || 0) + 1;
+            });
+
+            let response = '👥 <strong>Répartition des équipes :</strong><br><br>';
+            Object.entries(deptCount)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([dept, count]) => {
+                    const percent = Math.round((count / employees.length) * 100);
+                    response += `<strong>${dept}</strong> : ${count} employés (${percent}%)<br>`;
+                });
+
+            const largest = Object.entries(deptCount).sort((a, b) => b[1] - a[1])[0];
+            response += `<br>📌 <strong>Plus grand département :</strong> ${largest[0]} avec ${largest[1]} employés`;
+
+            return response;
+        }
+
+        function recommendSalaryIncrease() {
+            const candidates = employees
+                .filter(emp => {
+                    const years = (new Date() - new Date(emp.hireDate)) / (1000 * 60 * 60 * 24 * 365);
+                    return emp.performance >= 4 && years >= 1 && emp.status === 'Actif';
+                })
+                .sort((a, b) => b.performance - a.performance)
+                .slice(0, 5);
+
+            let response = '💰 <strong>Recommandations d\'augmentation :</strong><br><br>';
+            
+            if (candidates.length === 0) {
+                return '📌 Aucune recommandation d\'augmentation pour le moment. La plupart des employés ont déjà été récemment augmentés ou sont nouveaux.';
+            }
+
+            candidates.forEach((emp, i) => {
+                const currentSalary = parseFloat(emp.salary);
+                const suggestedIncrease = Math.round(currentSalary * 0.08);
+                const newSalary = currentSalary + suggestedIncrease;
+                
+                response += `${i + 1}. <strong>${emp.name}</strong> (${emp.department})<br>`;
+                response += `   Salaire actuel : ${currentSalary.toLocaleString()}€<br>`;
+                response += `   Augmentation suggérée : +${suggestedIncrease.toLocaleString()}€ (8%)<br>`;
+                response += `   Nouveau salaire : ${newSalary.toLocaleString()}€<br><br>`;
+            });
+
+            const totalCost = candidates.reduce((sum, emp) => sum + Math.round(parseFloat(emp.salary) * 0.08), 0);
+            response += `<br>📊 <strong>Coût total estimé :</strong> ${totalCost.toLocaleString()}€/an`;
+
+            return response;
+        }
+
+        function analyzeTurnoverRisk() {
+            const atRisk = employees.filter(emp => {
+                const years = (new Date() - new Date(emp.hireDate)) / (1000 * 60 * 60 * 24 * 365);
+                return emp.performance <= 3 || emp.status !== 'Actif' || years > 3;
+            });
+
+            let response = '⚠️ <strong>Analyse des risques de turnover :</strong><br><br>';
+            
+            if (atRisk.length === 0) {
+                return '✅ Bonne nouvelle ! Aucun risque majeur de turnover détecté. Votre équipe semble stable et engagée.';
+            }
+
+            response += `🔴 <strong>${atRisk.length} employés</strong> présentent des facteurs de risque :<br><br>`;
+            
+            const byDept = {};
+            atRisk.forEach(emp => {
+                byDept[emp.department] = (byDept[emp.department] || 0) + 1;
+            });
+
+            Object.entries(byDept).forEach(([dept, count]) => {
+                response += `- <strong>${dept}</strong> : ${count} employé(s)<br>`;
+            });
+
+            response += `<br>💡 <strong>Recommandations :</strong><br>`;
+            response += `• Organisez des entretiens individuels<br>`;
+            response += `• Évaluez les opportunités de développement<br>`;
+            response += `• Revoyez les packages de rémunération`;
+
+            return response;
+        }
+
+        function suggestTraining() {
+            const deptNeeds = {
+                'IT': ['Cloud Computing (AWS/Azure)', 'DevOps & CI/CD', 'Cybersécurité'],
+                'Marketing': ['Marketing Digital Avancé', 'Analytics & Data', 'Content Strategy'],
+                'Finance': ['Finance Digitale', 'Power BI / Tableau', 'Gestion de Risques'],
+                'RH': ['HR Analytics', 'Talent Management', 'Employee Experience'],
+                'Ventes': ['Techniques de Vente Consultative', 'CRM Avancé', 'Négociation']
+            };
+
+            let response = '🎓 <strong>Suggestions de formation par département :</strong><br><br>';
+
+            const deptCount = {};
+            employees.forEach(emp => {
+                deptCount[emp.department] = (deptCount[emp.department] || 0) + 1;
+            });
+
+            Object.entries(deptCount).forEach(([dept, count]) => {
+                if (deptNeeds[dept]) {
+                    response += `<strong>${dept}</strong> (${count} employés) :<br>`;
+                    deptNeeds[dept].forEach(training => {
+                        response += `  • ${training}<br>`;
+                    });
+                    response += `<br>`;
+                }
+            });
+
+            response += `💡 <strong>Conseil :</strong> Priorisez les formations pour les départements avec le plus d'employés pour maximiser l'impact.`;
+
+            return response;
+        }
+
+        function analyzeDepartment(dept) {
+            const deptEmployees = employees.filter(e => e.department.toLowerCase() === dept);
+            
+            if (deptEmployees.length === 0) {
+                return `❌ Aucun employé trouvé dans le département "${dept}".`;
+            }
+
+            const avgSalary = Math.round(deptEmployees.reduce((s, e) => s + parseFloat(e.salary), 0) / deptEmployees.length);
+            const avgPerf = (deptEmployees.reduce((s, e) => s + e.performance, 0) / deptEmployees.length).toFixed(1);
+
+            let response = `📋 <strong>Analyse du département ${dept.toUpperCase()} :</strong><br><br>`;
+            response += `👥 <strong>Effectif :</strong> ${deptEmployees.length} employés<br>`;
+            response += `💰 <strong>Salaire moyen :</strong> ${avgSalary.toLocaleString()}€<br>`;
+            response += `⭐ <strong>Performance moyenne :</strong> ${avgPerf}/5<br><br>`;
+            response += `<strong>Membres de l'équipe :</strong><br>`;
+            
+            deptEmployees.slice(0, 5).forEach(emp => {
+                response += `• ${emp.name} - ${emp.position}<br>`;
+            });
+
+            if (deptEmployees.length > 5) {
+                response += `... et ${deptEmployees.length - 5} autres`;
+            }
+
+            return response;
+        }
+
+        function extractDepartment(question) {
+            const depts = ['it', 'rh', 'finance', 'marketing', 'ventes'];
+            for (let dept of depts) {
+                if (question.includes(dept)) return dept;
+            }
+            return null;
+        }
+
+        function searchEmployees(question) {
+            // Simple search in names
+            const results = employees.filter(emp => 
+                question.toLowerCase().includes(emp.name.toLowerCase().split(' ')[0].toLowerCase())
+            );
+
+            if (results.length > 0) {
+                let response = '🔍 <strong>Résultats de recherche :</strong><br><br>';
+                results.forEach(emp => {
+                    response += `<strong>${emp.name}</strong><br>`;
+                    response += `Poste : ${emp.position} (${emp.department})<br>`;
+                    response += `Email : ${emp.email}<br>`;
+                    response += `Salaire : ${parseFloat(emp.salary).toLocaleString()}€<br><br>`;
+                });
+                return response;
+            }
+
+            return '🔍 Aucun employé trouvé correspondant à votre recherche.';
+        }
+
+        function analyzeBudget() {
+            const totalSalary = employees.reduce((sum, emp) => sum + parseFloat(emp.salary), 0);
+            const monthlyBudget = Math.round(totalSalary / 12);
+            const byDept = {};
+
+            employees.forEach(emp => {
+                byDept[emp.department] = (byDept[emp.department] || 0) + parseFloat(emp.salary);
+            });
+
+            let response = '💼 <strong>Analyse budgétaire :</strong><br><br>';
+            response += `💰 <strong>Budget salarial annuel :</strong> ${totalSalary.toLocaleString()}€<br>`;
+            response += `📅 <strong>Budget mensuel :</strong> ${monthlyBudget.toLocaleString()}€<br><br>`;
+            response += `<strong>Répartition par département :</strong><br>`;
+
+            Object.entries(byDept)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([dept, total]) => {
+                    const percent = Math.round((total / totalSalary) * 100);
+                    response += `• ${dept} : ${Math.round(total).toLocaleString()}€ (${percent}%)<br>`;
+                });
+
+            return response;
+        }
+
+        function generateDefaultResponse(question) {
+            const responses = [
+                `🤔 Je peux vous aider avec des analyses sur vos employés, les salaires, les performances, et bien plus encore. Essayez de reformuler votre question ou utilisez les suggestions rapides ci-dessus !`,
+                `💡 Voici quelques exemples de questions que je peux traiter :<br>
+                 • "Quel est le salaire moyen du département IT ?"<br>
+                 • "Qui sont les meilleurs performers ?"<br>
+                 • "Analyse les risques de turnover"<br>
+                 • "Suggestions de formation"`,
+                `🎯 Je suis spécialisé dans l'analyse RH. Je peux vous donner des insights sur les salaires, performances, recommandations d'augmentation, et plus encore. Que voulez-vous savoir ?`
+            ];
+
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Clear Chat
+        document.getElementById('clearChatBtn').addEventListener('click', () => {
+            if (confirm('Voulez-vous vraiment effacer tout l\'historique de conversation ?')) {
+                chatHistory = [];
+                localStorage.removeItem('chatHistory');
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="message bot-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <strong>Assistant IA</strong>
+                            <p>Bonjour ! Je suis votre assistant RH intelligent. Comment puis-je vous aider aujourd'hui ?</p>
+                        </div>
+                    </div>
+                `;
+                showNotification('Historique effacé', 'success');
+            }
+        });
+
+        // Save Chat History
+        function saveChatHistory() {
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        // Notification
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <div class="notification-text">${message}</div>
+            `;
+            container.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+    </script>
+
+    <style>
+        .ai-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 200px);
+        }
+
+        .quick-actions {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+        }
+
+        .quick-actions h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .quick-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .quick-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .quick-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .quick-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .chat-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        }
+
+        .message-content {
+            flex: 1;
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .user-message .message-content {
+            background: var(--primary);
+            color: white;
+        }
+
+        .message-content strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .message-content p {
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.5rem 0;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input-container input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .stats-panel {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+        }
+
+        .stats-panel h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .stat-item strong {
+            display: block;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .stat-item span {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 1200px) {
+            .ai-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .quick-actions {
+                order: 1;
+            }
+
+            .chat-container {
+                order: 2;
+                min-height: 500px;
+            }
+
+            .stats-panel {
+                order: 3;
+            }
+        }
+    </style>
+</body>
+</html>

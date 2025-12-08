@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À Propos - SmartHR Lite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-users-cog"></i>
+            <h2>SmartHR Lite</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            </a>
+            <a href="ai-assistant.html" class="nav-item active">
+                <i class="fas fa-robot"></i>
+                <span>Assistant IA</span>
+            </a>
+            <a href="#" class="nav-item" data-page="history">
+                <i class="fas fa-history"></i>
+                <span>Historique</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Rapports</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="about.html" class="nav-item active">
+                <i class="fas fa-info-circle"></i>
+                <span>À Propos</span>
+            </a>
+        </nav>
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1>À Propos de SmartHR Lite</h1>
+        </header>
+
+        <div class="page active">
+            <div class="about-container">
+                <div class="about-card">
+                    <div class="about-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h2>Notre Mission</h2>
+                    <p>SmartHR Lite est une solution moderne de gestion des ressources humaines conçue pour simplifier la gestion quotidienne des employés. Notre mission est de fournir un outil intuitif, performant et accessible à toutes les entreprises.</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="about-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h2>Fonctionnalités Principales</h2>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> Dashboard statistique en temps réel</li>
+                        <li><i class="fas fa-check"></i> Gestion complète des employés (CRUD)</li>
+                        <li><i class="fas fa-check"></i> Système de filtres avancés</li>
+                        <li><i class="fas fa-check"></i> Export CSV et impression</li>
+                        <li><i class="fas fa-check"></i> Historique des actions</li>
+                        <li><i class="fas fa-check"></i> Mode sombre automatique</li>
+                        <li><i class="fas fa-check"></i> Interface responsive</li>
+                        <li><i class="fas fa-check"></i> Graphiques interactifs</li>
+                    </ul>
+                </div>
+
+                <div class="about-card">
+                    <div class="about-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h2>Technologies Utilisées</h2>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <i class="fab fa-html5"></i>
+                            <span>HTML5</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fab fa-css3-alt"></i>
+                            <span>CSS3</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fab fa-js"></i>
+                            <span>JavaScript</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Chart.js</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <div class="about-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h2>Version & License</h2>
+                    <p><strong>Version:</strong> 1.0.0</p>
+                    <p><strong>Date de sortie:</strong> Décembre 2024</p>
+                    <p><strong>License:</strong> Open Source - MIT</p>
+                    <p><strong>Développé par:</strong> Équipe SmartHR</p>
+                </div>
+
+                <div class="about-card full-width">
+                    <div class="about-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h2>Contact & Support</h2>
+                    <p>Pour toute question, suggestion ou support technique, n'hésitez pas à nous contacter :</p>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>support@smarthr-lite.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-globe"></i>
+                            <span>www.smarthr-lite.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fab fa-github"></i>
+                            <span>github.com/smarthr-lite</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Theme Management
+        const hour = new Date().getHours();
+        const isDark = hour >= 20 || hour < 6;
+        const themeToggle = document.getElementById('themeToggle');
+        
+        if (isDark) {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        }
+
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+    </script>
+
+    <style>
+        .about-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .about-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .about-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .about-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .about-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .about-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            padding: 0.75rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .features-list li i {
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tech-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tech-item i {
+            font-size: 3rem;
+            color: var(--primary);
+        }
+
+        .tech-item span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .contact-item i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .contact-item span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .about-container {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

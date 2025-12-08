@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHR Lite - Gestion des Employés</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Notifications -->
+    <div id="notificationContainer"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-users-cog"></i>
+            <h2>SmartHR Lite</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="employees">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            <a href="ai-assistant.html" class="nav-item active">
+                <i class="fas fa-robot"></i>
+                <span>Assistant IA</span>
+            </a>
+            </a>
+            <a href="#" class="nav-item" data-page="history">
+                <i class="fas fa-history"></i>
+                <span>Historique</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Rapports</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <i class="fas fa-info-circle"></i>
+                <span>À Propos</span>
+            </a>
+        </nav>
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="addEmployeeBtn">
+                    <i class="fas fa-plus"></i> Nouvel Employé
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalEmployees">0</h3>
+                        <p>Total Employés</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="newEmployees">0</h3>
+                        <p>Nouveaux ce mois</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="avgSalary">0€</h3>
+                        <p>Salaire Moyen</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="departments">0</h3>
+                        <p>Départements</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Répartition par Poste</h3>
+                    <canvas id="positionChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Évolution des Embauches</h3>
+                    <canvas id="hiringChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employees Page -->
+        <div id="employeesPage" class="page">
+            <div class="filters-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Rechercher un employé...">
+                </div>
+                <select id="departmentFilter" class="filter-select">
+                    <option value="">Tous les départements</option>
+                    <option value="IT">IT</option>
+                    <option value="RH">RH</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Ventes">Ventes</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="Actif">Actif</option>
+                    <option value="En congé">En congé</option>
+                    <option value="Contrat terminé">Contrat terminé</option>
+                </select>
+                <button class="btn btn-secondary" id="exportBtn">
+                    <i class="fas fa-download"></i> Exporter CSV
+                </button>
+            </div>
+
+            <div class="employees-grid" id="employeesGrid"></div>
+        </div>
+
+        <!-- History Page -->
+        <div id="historyPage" class="page">
+            <div class="history-container" id="historyContainer"></div>
+        </div>
+    </main>
+
+    <!-- Modal for Add/Edit Employee -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nouvel Employé</h2>
+                <button class="close-btn" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="employeeForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom complet *</label>
+                        <input type="text" id="employeeName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="employeeEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Poste *</label>
+                        <input type="text" id="employeePosition" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Département *</label>
+                        <select id="employeeDepartment" required>
+                            <option value="">Sélectionner...</option>
+                            <option value="IT">IT</option>
+                            <option value="RH">RH</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Ventes">Ventes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Salaire (€) *</label>
+                        <input type="number" id="employeeSalary" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'embauche *</label>
+                        <input type="date" id="employeeHireDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Statut *</label>
+                        <select id="employeeStatus" required>
+                            <option value="Actif">Actif</option>
+                            <option value="En congé">En congé</option>
+                            <option value="Contrat terminé">Contrat terminé</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Photo de profil</label>
+                        <input type="file" id="employeePhoto" accept="image/*">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Employee Details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content details-modal">
+            <div class="modal-header">
+                <h2>Fiche Employé</h2>
+                <button class="close-btn" id="closeDetails">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="employeeDetails"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // ===========================
+        // DATA MANAGEMENT
+        // ===========================
+        let employees = JSON.parse(localStorage.getItem('employees')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let editingEmployeeId = null;
+        let currentPhoto = '';
+
+        // ===========================
+        // SAMPLE DATA - Initial Load
+        // ===========================
+        if (employees.length === 0) {
+            employees = [
+                {
+                    id: '1701001',
+                    name: 'Sophie Martin',
+                    email: 'sophie.martin@smarthr.com',
+                    position: 'Directrice RH',
+                    department: 'RH',
+                    salary: '55000',
+                    hireDate: '2022-01-15',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 2
+                },
+                {
+                    id: '1701002',
+                    name: 'Thomas Dubois',
+                    email: 'thomas.dubois@smarthr.com',
+                    position: 'Développeur Senior',
+                    department: 'IT',
+                    salary: '48000',
+                    hireDate: '2022-03-10',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 1
+                },
+                {
+                    id: '1701003',
+                    name: 'Marie Lambert',
+                    email: 'marie.lambert@smarthr.com',
+                    position: 'Chef Comptable',
+                    department: 'Finance',
+                    salary: '52000',
+                    hireDate: '2021-11-20',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 4,
+                    modifications: 3
+                },
+                {
+                    id: '1701004',
+                    name: 'Lucas Bernard',
+                    email: 'lucas.bernard@smarthr.com',
+                    position: 'Développeur Full Stack',
+                    department: 'IT',
+                    salary: '42000',
+                    hireDate: '2023-02-05',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 4,
+                    modifications: 0
+                },
+                {
+                    id: '1701005',
+                    name: 'Emma Rousseau',
+                    email: 'emma.rousseau@smarthr.com',
+                    position: 'Responsable Marketing',
+                    department: 'Marketing',
+                    salary: '47000',
+                    hireDate: '2022-06-12',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 2
+                },
+                {
+                    id: '1701006',
+                    name: 'Hugo Petit',
+                    email: 'hugo.petit@smarthr.com',
+                    position: 'Analyste Financier',
+                    department: 'Finance',
+                    salary: '38000',
+                    hireDate: '2023-05-08',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 4,
+                    modifications: 1
+                },
+                {
+                    id: '1701007',
+                    name: 'Chloé Moreau',
+                    email: 'chloe.moreau@smarthr.com',
+                    position: 'UX Designer',
+                    department: 'IT',
+                    salary: '40000',
+                    hireDate: '2023-01-18',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 4,
+                    modifications: 0
+                },
+                {
+                    id: '1701008',
+                    name: 'Alexandre Simon',
+                    email: 'alexandre.simon@smarthr.com',
+                    position: 'Commercial Senior',
+                    department: 'Ventes',
+                    salary: '45000',
+                    hireDate: '2022-09-22',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 2
+                },
+                {
+                    id: '1701009',
+                    name: 'Léa Leroy',
+                    email: 'lea.leroy@smarthr.com',
+                    position: 'Assistante RH',
+                    department: 'RH',
+                    salary: '32000',
+                    hireDate: '2023-07-14',
+                    status: 'En congé',
+                    photo: '',
+                    performance: 4,
+                    modifications: 1
+                },
+                {
+                    id: '1701010',
+                    name: 'Nathan Garnier',
+                    email: 'nathan.garnier@smarthr.com',
+                    position: 'Chef de Projet IT',
+                    department: 'IT',
+                    salary: '50000',
+                    hireDate: '2021-08-30',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 4
+                },
+                {
+                    id: '1701011',
+                    name: 'Camille Fontaine',
+                    email: 'camille.fontaine@smarthr.com',
+                    position: 'Content Manager',
+                    department: 'Marketing',
+                    salary: '36000',
+                    hireDate: '2023-04-20',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 4,
+                    modifications: 0
+                },
+                {
+                    id: '1701012',
+                    name: 'Julien Chevalier',
+                    email: 'julien.chevalier@smarthr.com',
+                    position: 'Commercial',
+                    department: 'Ventes',
+                    salary: '34000',
+                    hireDate: '2023-09-05',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 3,
+                    modifications: 0
+                },
+                {
+                    id: '1701013',
+                    name: 'Sarah Girard',
+                    email: 'sarah.girard@smarthr.com',
+                    position: 'DevOps Engineer',
+                    department: 'IT',
+                    salary: '46000',
+                    hireDate: '2022-11-10',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 1
+                },
+                {
+                    id: '1701014',
+                    name: 'Antoine Blanc',
+                    email: 'antoine.blanc@smarthr.com',
+                    position: 'Auditeur Interne',
+                    department: 'Finance',
+                    salary: '41000',
+                    hireDate: '2023-03-15',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 4,
+                    modifications: 1
+                },
+                {
+                    id: '1701015',
+                    name: 'Julie André',
+                    email: 'julie.andre@smarthr.com',
+                    position: 'Responsable Formation',
+                    department: 'RH',
+                    salary: '44000',
+                    hireDate: '2022-04-28',
+                    status: 'Actif',
+                    photo: '',
+                    performance: 5,
+                    modifications: 2
+                }
+            ];
+            
+            localStorage.setItem('employees', JSON.stringify(employees));
+            
+            // Add initial history
+            history = [
+                {
+                    id: Date.now().toString(),
+                    type: 'add',
+                    message: 'Initialisation du système avec 15 employés',
+                    timestamp: new Date().toISOString()
+                }
+            ];
+            localStorage.setItem('history', JSON.stringify(history));
+        }
+
+        // ===========================
+        // INITIALIZATION
+        // ===========================
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            setupEventListeners();
+            renderDashboard();
+            renderEmployees();
+            renderHistory();
+        });
+
+        // ===========================
+        // THEME MANAGEMENT
+        // ===========================
+        function initializeTheme() {
+            const hour = new Date().getHours();
+            const isDark = hour >= 20 || hour < 6;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+
+            themeToggle.addEventListener('change', (e) => {
+                document.body.classList.toggle('dark-mode');
+            });
+        }
+
+        // ===========================
+        // EVENT LISTENERS
+        // ===========================
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Only prevent default for internal pages (those with data-page)
+                    if (item.dataset.page) {
+                        e.preventDefault();
+                        const page = item.dataset.page;
+                        switchPage(page);
+                    }
+                    // External links (reports.html, settings.html, about.html) will navigate normally
+                });
+            });
+
+            // Add Employee Button
+            document.getElementById('addEmployeeBtn').addEventListener('click', () => {
+                openEmployeeModal();
+            });
+
+            // Modal Controls
+            document.getElementById('closeModal').addEventListener('click', closeEmployeeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeEmployeeModal);
+            document.getElementById('closeDetails').addEventListener('click', closeDetailsModal);
+
+            // Form Submit
+            document.getElementById('employeeForm').addEventListener('submit', handleFormSubmit);
+
+            // Filters
+            document.getElementById('searchInput').addEventListener('input', filterEmployees);
+            document.getElementById('departmentFilter').addEventListener('change', filterEmployees);
+            document.getElementById('statusFilter').addEventListener('change', filterEmployees);
+
+            // Export
+            document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+
+            // Photo Upload
+            document.getElementById('employeePhoto').addEventListener('change', handlePhotoUpload);
+
+            // Close modals on outside click
+            document.getElementById('employeeModal').addEventListener('click', (e) => {
+                if (e.target.id === 'employeeModal') closeEmployeeModal();
+            });
+            document.getElementById('detailsModal').addEventListener('click', (e) => {
+                if (e.target.id === 'detailsModal') closeDetailsModal();
+            });
+        }
+
+        // ===========================
+        // PAGE NAVIGATION
+        // ===========================
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`${pageName}Page`).classList.add('active');
+            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+            
+            const titles = {
+                dashboard: 'Dashboard',
+                employees: 'Gestion des Employés',
+                history: 'Historique des Actions'
+            };
+            document.getElementById('pageTitle').textContent = titles[pageName];
+
+            if (pageName === 'dashboard') renderDashboard();
+            if (pageName === 'employees') renderEmployees();
+            if (pageName === 'history') renderHistory();
+        }
+
+        // ===========================
+        // DASHBOARD
+        // ===========================
+        function renderDashboard() {
+            const stats = calculateStats();
+            
+            document.getElementById('totalEmployees').textContent = stats.total;
+            document.getElementById('newEmployees').textContent = stats.newThisMonth;
+            document.getElementById('avgSalary').textContent = stats.avgSalary.toLocaleString() + '€';
+            document.getElementById('departments').textContent = stats.departments;
+
+            renderCharts(stats);
+        }
+
+        function calculateStats() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            const newThisMonth = employees.filter(emp => {
+                const hireDate = new Date(emp.hireDate);
+                return hireDate.getMonth() === currentMonth && hireDate.getFullYear() === currentYear;
+            }).length;
+
+            const totalSalary = employees.reduce((sum, emp) => sum + parseFloat(emp.salary), 0);
+            const avgSalary = employees.length > 0 ? totalSalary / employees.length : 0;
+
+            const depts = new Set(employees.map(emp => emp.department));
+
+            return {
+                total: employees.length,
+                newThisMonth,
+                avgSalary: Math.round(avgSalary),
+                departments: depts.size
+            };
+        }
+
+        function renderCharts(stats) {
+            renderPositionChart();
+            renderHiringChart();
+        }
+
+        function renderPositionChart() {
+            const ctx = document.getElementById('positionChart');
+            if (!ctx) return;
+
+            const positions = {};
+            employees.forEach(emp => {
+                positions[emp.position] = (positions[emp.position] || 0) + 1;
+            });
+
+            const colors = [
+                'rgba(79, 70, 229, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(239, 68, 68, 0.8)'
+            ];
+
+            if (window.positionChart) window.positionChart.destroy();
+
+            window.positionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(positions),
+                    datasets: [{
+                        data: Object.values(positions),
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: getComputedStyle(document.body).getPropertyValue('--bg-secondary')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: getComputedStyle(document.body).getPropertyValue('--text-primary'),
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHiringChart() {
+            const ctx = document.getElementById('hiringChart');
+            if (!ctx) return;
+
+            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+            const hiringData = Array(12).fill(0);
+
+            employees.forEach(emp => {
+                const month = new Date(emp.hireDate).getMonth();
+                hiringData[month]++;
+            });
+
+            if (window.hiringChart) window.hiringChart.destroy();
+
+            window.hiringChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Embauches',
+                        data: hiringData,
+                        backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                color: getComputedStyle(document.body).getPropertyValue('--text-secondary')
+                            },
+                            grid: {
+                                color: getComputedStyle(document.body).getPropertyValue('--border')
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: getComputedStyle(document.body).getPropertyValue('--text-secondary')
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===========================
+        // EMPLOYEES RENDERING
+        // ===========================
+        function renderEmployees() {
+            const grid = document.getElementById('employeesGrid');
+            const filteredEmployees = getFilteredEmployees();
+
+            if (filteredEmployees.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 3rem;">Aucun employé trouvé</p>';
+                return;
+            }
+
+            grid.innerHTML = filteredEmployees.map(emp => `
+                <div class="employee-card">
+                    <div class="employee-header">
+                        <div class="employee-avatar">
+                            ${emp.photo ? `<img src="${emp.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : emp.name.charAt(0)}
+                        </div>
+                        <div class="employee-info">
+                            <h3>${emp.name}</h3>
+                            <p>${emp.position}</p>
+                            <span class="badge ${getBadgeClass(emp.status)}">${emp.status}</span>
+                        </div>
+                    </div>
+                    <div class="employee-details">
+                        <div class="detail-row">
+                            <span>Département:</span>
+                            <strong>${emp.department}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Email:</span>
+                            <strong>${emp.email}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Salaire:</span>
+                            <strong>${parseFloat(emp.salary).toLocaleString()}€</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Date d'embauche:</span>
+                            <strong>${formatDate(emp.hireDate)}</strong>
+                        </div>
+                    </div>
+                    <div class="employee-actions">
+                        <button class="btn-view" onclick="viewEmployee('${emp.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-edit" onclick="editEmployee('${emp.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteEmployee('${emp.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getFilteredEmployees() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const dept = document.getElementById('departmentFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            return employees.filter(emp => {
+                const matchSearch = emp.name.toLowerCase().includes(search) || 
+                                  emp.email.toLowerCase().includes(search) ||
+                                  emp.position.toLowerCase().includes(search);
+                const matchDept = !dept || emp.department === dept;
+                const matchStatus = !status || emp.status === status;
+
+                return matchSearch && matchDept && matchStatus;
+            });
+        }
+
+        function filterEmployees() {
+            renderEmployees();
+        }
+
+        function getBadgeClass(status) {
+            switch(status) {
+                case 'Actif': return 'active';
+                case 'En congé': return 'leave';
+                case 'Contrat terminé': return 'terminated';
+                default: return 'active';
+            }
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // ===========================
+        // MODAL MANAGEMENT
+        // ===========================
+        function openEmployeeModal(employee = null) {
+            editingEmployeeId = employee ? employee.id : null;
+            const modal = document.getElementById('employeeModal');
+            const title = document.getElementById('modalTitle');
+
+            if (employee) {
+                title.textContent = 'Modifier l\'employé';
+                document.getElementById('employeeName').value = employee.name;
+                document.getElementById('employeeEmail').value = employee.email;
+                document.getElementById('employeePosition').value = employee.position;
+                document.getElementById('employeeDepartment').value = employee.department;
+                document.getElementById('employeeSalary').value = employee.salary;
+                document.getElementById('employeeHireDate').value = employee.hireDate;
+                document.getElementById('employeeStatus').value = employee.status;
+            } else {
+                title.textContent = 'Nouvel Employé';
+                document.getElementById('employeeForm').reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeEmployeeModal() {
+            document.getElementById('employeeModal').classList.remove('active');
+            document.getElementById('employeeForm').reset();
+            editingEmployeeId = null;
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+
+        // ===========================
+        // PHOTO UPLOAD
+        // ===========================
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentPhoto = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ===========================
+        // FORM HANDLING
+        // ===========================
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const employeeData = {
+                id: editingEmployeeId || Date.now().toString(),
+                name: document.getElementById('employeeName').value,
+                email: document.getElementById('employeeEmail').value,
+                position: document.getElementById('employeePosition').value,
+                department: document.getElementById('employeeDepartment').value,
+                salary: document.getElementById('employeeSalary').value,
+                hireDate: document.getElementById('employeeHireDate').value,
+                status: document.getElementById('employeeStatus').value,
+                photo: currentPhoto || (editingEmployeeId ? employees.find(e => e.id === editingEmployeeId).photo : ''),
+                performance: editingEmployeeId ? employees.find(e => e.id === editingEmployeeId).performance : 4,
+                modifications: editingEmployeeId ? (employees.find(e => e.id === editingEmployeeId).modifications || 0) + 1 : 0
+            };
+
+            if (editingEmployeeId) {
+                const index = employees.findIndex(e => e.id === editingEmployeeId);
+                employees[index] = employeeData;
+                addToHistory('edit', `Modification de ${employeeData.name}`);
+                showNotification('Employé modifié avec succès', 'success');
+            } else {
+                employees.push(employeeData);
+                addToHistory('add', `Ajout de ${employeeData.name}`);
+                showNotification('Employé ajouté avec succès', 'success');
+            }
+
+            saveData();
+            closeEmployeeModal();
+            renderDashboard();
+            renderEmployees();
+            currentPhoto = '';
+        }
+
+        // ===========================
+        // EMPLOYEE ACTIONS
+        // ===========================
+        function viewEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+
+            const modal = document.getElementById('detailsModal');
+            const detailsDiv = document.getElementById('employeeDetails');
+
+            const stars = '★'.repeat(employee.performance || 4) + '☆'.repeat(5 - (employee.performance || 4));
+
+            detailsDiv.innerHTML = `
+                <div class="details-header">
+                    <div class="details-avatar">
+                        ${employee.photo ? `<img src="${employee.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : employee.name.charAt(0)}
+                    </div>
+                    <div class="details-info">
+                        <h2>${employee.name}</h2>
+                        <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.5rem;">${employee.position}</p>
+                        <span class="badge ${getBadgeClass(employee.status)}">${employee.status}</span>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>Informations générales</h3>
+                    <div class="details-grid">
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.25rem;">Email</p>
+                            <strong>${employee.email}</strong>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.25rem;">Département</p>
+                            <strong>${employee.department}</strong>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.25rem;">Salaire</p>
+                            <strong>${parseFloat(employee.salary).toLocaleString()}€</strong>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.25rem;">Date d'embauche</p>
+                            <strong>${formatDate(employee.hireDate)}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>Performance</h3>
+                    <div class="performance-stars">${stars}</div>
+                </div>
+
+                <div class="details-section">
+                    <h3>Historique</h3>
+                    <p style="color: var(--text-secondary);">
+                        Profil modifié ${employee.modifications || 0} fois
+                    </p>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="sendNotificationToEmployee('${employee.name}')">
+                        <i class="fas fa-bell"></i> Envoyer une notification
+                    </button>
+                    <button class="btn btn-secondary" onclick="printEmployee('${id}')">
+                        <i class="fas fa-print"></i> Imprimer
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function editEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (employee) {
+                openEmployeeModal(employee);
+            }
+        }
+
+        function deleteEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (employee && confirm(`Êtes-vous sûr de vouloir supprimer ${employee.name} ?`)) {
+                employees = employees.filter(e => e.id !== id);
+                addToHistory('delete', `Suppression de ${employee.name}`);
+                saveData();
+                showNotification('Employé supprimé avec succès', 'success');
+                renderDashboard();
+                renderEmployees();
+            }
+        }
+
+        function sendNotificationToEmployee(name) {
+            showNotification(`Notification envoyée à ${name}`, 'info');
+        }
+
+        function printEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Fiche Employé - ${employee.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 2rem; }
+                        h1 { color: #4f46e5; }
+                        .info { margin: 1rem 0; }
+                        .info strong { display: inline-block; width: 150px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Fiche Employé</h1>
+                    <div class="info"><strong>Nom:</strong> ${employee.name}</div>
+                    <div class="info"><strong>Poste:</strong> ${employee.position}</div>
+                    <div class="info"><strong>Département:</strong> ${employee.department}</div>
+                    <div class="info"><strong>Email:</strong> ${employee.email}</div>
+                    <div class="info"><strong>Salaire:</strong> ${parseFloat(employee.salary).toLocaleString()}€</div>
+                    <div class="info"><strong>Date d'embauche:</strong> ${formatDate(employee.hireDate)}</div>
+                    <div class="info"><strong>Statut:</strong> ${employee.status}</div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // ===========================
+        // EXPORT TO CSV
+        // ===========================
+        function exportToCSV() {
+            const headers = ['Nom', 'Email', 'Poste', 'Département', 'Salaire', 'Date d\'embauche', 'Statut'];
+            const rows = employees.map(emp => [
+                emp.name,
+                emp.email,
+                emp.position,
+                emp.department,
+                emp.salary,
+                emp.hireDate,
+                emp.status
+            ]);
+
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `employes_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+
+            showNotification('Export CSV réussi', 'success');
+        }
+
+        // ===========================
+        // HISTORY MANAGEMENT
+        // ===========================
+        function addToHistory(type, message) {
+            const historyItem = {
+                id: Date.now().toString(),
+                type,
+                message,
+                timestamp: new Date().toISOString()
+            };
+
+            history.unshift(historyItem);
+            if (history.length > 50) history = history.slice(0, 50);
+            
+            localStorage.setItem('history', JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContainer');
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 3rem;">Aucun historique disponible</p>';
+                return;
+            }
+
+            container.innerHTML = history.map(item => {
+                const icon = item.type === 'add' ? 'fa-plus' : item.type === 'edit' ? 'fa-edit' : 'fa-trash';
+                const time = formatTimestamp(item.timestamp);
+
+                return `
+                    <div class="history-item">
+                        <div class="history-icon ${item.type}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="history-content">
+                            <h4>${item.message}</h4>
+                            <p class="history-time">${time}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'À l\'instant';
+            if (minutes < 60) return `Il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
+            if (hours < 24) return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+            if (days < 7) return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
+            
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // ===========================
+        // NOTIFICATION SYSTEM
+        // ===========================
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+
+            notification.innerHTML = `
+                <i class="fas ${icons[type]}"></i>
+                <div class="notification-text">${message}</div>
+            `;
+
+            container.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // ===========================
+        // DATA PERSISTENCE
+        // ===========================
+        function saveData() {
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
+
+        // ===========================
+        // GLOBAL FUNCTIONS
+        // ===========================
+        window.viewEmployee = viewEmployee;
+        window.editEmployee = editEmployee;
+        window.deleteEmployee = deleteEmployee;
+        window.sendNotificationToEmployee = sendNotificationToEmployee;
+        window.printEmployee = printEmployee;
+
+        // ===========================
+        // FLOATING AI ASSISTANT
+        // ===========================
+        let floatingChatHistory = [];
+
+        // Toggle Floating Chat
+        document.getElementById('floatingAiBtn').addEventListener('click', () => {
+            const modal = document.getElementById('floatingChatModal');
+            modal.classList.toggle('active');
+            if (modal.classList.contains('active')) {
+                document.getElementById('floatingChatInput').focus();
+            }
+        });
+
+        document.getElementById('closeFloatingChat').addEventListener('click', () => {
+            document.getElementById('floatingChatModal').classList.remove('active');
+        });
+
+        // Send Floating Message
+        function sendFloatingMessage() {
+            const input = document.getElementById('floatingChatInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+
+            addFloatingMessage('user', question);
+            input.value = '';
+
+            // Show typing
+            showFloatingTyping();
+
+            setTimeout(() => {
+                const response = processFloatingQuestion(question);
+                hideFloatingTyping();
+                addFloatingMessage('bot', response);
+            }, 1000);
+        }
+
+        function addFloatingMessage(role, content) {
+            const container = document.getElementById('floatingChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+
+            if (role === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar-small">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content-small">
+                        <p>${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content-small user-content">
+                        <p>${content}</p>
+                    </div>
+                    <div class="message-avatar-small user-avatar-small">
+                        <i class="fas fa-user"></i>
+                    </div>
+                `;
+            }
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showFloatingTyping() {
+            const container = document.getElementById('floatingChatMessages');
+            const typing = document.createElement('div');
+            typing.id = 'floatingTyping';
+            typing.className = 'message bot-message';
+            typing.innerHTML = `
+                <div class="message-avatar-small">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content-small">
+                    <div class="typing-dots-small">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(typing);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideFloatingTyping() {
+            const typing = document.getElementById('floatingTyping');
+            if (typing) typing.remove();
+        }
+
+        function processFloatingQuestion(question) {
+            const q = question.toLowerCase();
+
+            if (q.includes('total') || q.includes('combien')) {
+                return `📊 Vous avez actuellement <strong>${employees.length} employés</strong> dans votre système.`;
+            }
+
+            if (q.includes('salaire') && q.includes('moyen')) {
+                const avg = Math.round(employees.reduce((s, e) => s + parseFloat(e.salary), 0) / employees.length);
+                return `💰 Le salaire moyen est de <strong>${avg.toLocaleString()}€</strong>`;
+            }
+
+            if (q.includes('département')) {
+                const depts = new Set(employees.map(e => e.department));
+                return `🏢 Vous avez <strong>${depts.size} départements</strong> : ${Array.from(depts).join(', ')}`;
+            }
+
+            if (q.includes('performer') || q.includes('meilleur')) {
+                const top = employees.filter(e => e.performance >= 5).length;
+                return `⭐ Vous avez <strong>${top} top performers</strong> (performance 5/5)`;
+            }
+
+            return `🤖 Pour des analyses plus détaillées, visitez la <a href="ai-assistant.html" style="color: var(--primary); text-decoration: underline;">page Assistant IA</a> !<br><br>Je peux répondre à des questions simples comme :<br>• "Combien d'employés ?"<br>• "Salaire moyen ?"<br>• "Nombre de départements ?"`;
+        }
+
+        window.sendFloatingMessage = sendFloatingMessage;
+    </script>
+</body>
+</html>
